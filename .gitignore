@@ -4,6 +4,9 @@ target/
 !**/src/test/**/target/
 .kotlin
 
+JSupervisorDev.app/
+src/main/native/build/
+
 ### IntelliJ IDEA ###
 .idea/modules.xml
 .idea/jarRepositories.xml
