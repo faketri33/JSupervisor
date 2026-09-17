@@ -1,9 +1,8 @@
 package org.faketri.process;
 
-public class ProcessErrorHandler {
-    private Exception exception;
 
-    public ProcessErrorHandler(Exception exception) {
-        this.exception = exception;
-    }
+@FunctionalInterface
+public interface ProcessErrorHandler {
+
+    void handelException(Throwable ex);
 }

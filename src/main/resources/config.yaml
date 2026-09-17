@@ -3,3 +3,7 @@ app:
     command:
       - ls
     restartPolicy: ALWAYS
+
+  myapp:
+    command:
+      - pwd

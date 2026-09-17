@@ -1,5 +1,6 @@
 package org.faketri.dto;
 
+import org.faketri.process.ProcessErrorHandler;
 import org.faketri.process.ProcessHandler;
 import org.faketri.process.reader.ProcessReader;
 
@@ -53,6 +54,10 @@ public class Application {
 
     public void listen(ProcessReader pr){
         processHandler.listen(pr);
+    }
+
+    public void errHandle(ProcessErrorHandler err){
+        processHandler.errHandle(err);
     }
 
     public void subscribe(Consumer<? super Process> consumer){

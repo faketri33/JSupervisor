@@ -24,11 +24,13 @@ public class ProcessHandler {
     private volatile boolean listening = false;
 
     private final Set<ProcessReader> inputListeners;
+    private final Set<ProcessErrorHandler> processErrorHandler;
 
     public ProcessHandler(List<String> commands) {
         this.processBuilder = new ProcessBuilder(commands);
         this.processBuilder.redirectErrorStream(true);
         this.inputListeners = ConcurrentHashMap.newKeySet();
+        this.processErrorHandler = ConcurrentHashMap.newKeySet();
     }
 
     public void start() throws IOException {
@@ -52,7 +54,7 @@ public class ProcessHandler {
                     for (var subscriber : inputListeners)
                         subscriber.read(line);
             } catch (IOException ex){
-                // TODO ProcessErrorHandler
+                processErrorHandler.forEach(err -> err.handelException(ex));
             }finally {
                 for (var subscriber : inputListeners) {
                     try {
@@ -73,9 +75,13 @@ public class ProcessHandler {
         needToListen();
     }
 
+    public void errHandle(ProcessErrorHandler err){
+        processErrorHandler.add(err);
+    }
+
     private void needToListen(){
         if (listening || process == null) return;
-        boolean notHaveListener = inputListeners.isEmpty();
+        boolean notHaveListener = inputListeners.isEmpty() & processErrorHandler.isEmpty();
         if (notHaveListener) return;
         listen();
     }
