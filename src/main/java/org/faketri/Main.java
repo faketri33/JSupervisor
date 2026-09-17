@@ -1,6 +1,10 @@
 package org.faketri;
 
 import org.faketri.mapper.ConfigMapper;
+import org.faketri.process.reader.ConsoleOutputProcessReader;
+import org.faketri.process.reader.InFileProcessReader;
+import org.faketri.process.reader.ProcessReader;
+import org.faketri.repository.ApplicationInMemoryRepository;
 import org.faketri.utils.Constants;
 import org.faketri.utils.YAMLConfigurationParser;
 import org.slf4j.Logger;
@@ -11,13 +15,33 @@ import java.nio.file.Path;
 
 public class Main {
     private static final Logger log = LoggerFactory.getLogger(Main.class);
-    private static final ApplicationManager manager = new ApplicationManager();
+    private static final ApplicationInMemoryRepository memoryRepository = new ApplicationInMemoryRepository();
 
     public static void main(String[] args) throws IOException {
-        var cnf = new YAMLConfigurationParser().parse(Path.of("/home/faketri/git/my/JSupervisor/src/main/resources/config.yaml"));
-        cnf.getApp().forEach((k, v) -> manager.save(ConfigMapper.toDto(k, v)));
+        if (args.length == 0) return;
 
-        manager.getByName("test").listen(log::info, log::error);
-        manager.startAllByProfile(Constants.ConfigurationConstants.DEFAULT_PROFILE);
+        var cnf = new YAMLConfigurationParser().parse(Path.of(args[0]));
+        cnf.getApp().forEach((k, v) -> memoryRepository.save(ConfigMapper.toDto(k, v)));
+
+        var app = memoryRepository.getByName("test");
+
+        ProcessReader toConsole = new ConsoleOutputProcessReader(System.out);
+        ProcessReader toFile = new InFileProcessReader(Path.of("/home/faketri/log/"+ app.getName() + ".txt"));
+
+        app.listen(toConsole);
+        app.listen(toFile);
+
+        memoryRepository.startAllByProfile(Constants.ConfigurationConstants.DEFAULT_PROFILE);
+
+        String format = "%-36s  %-15s  %-10s  %-10s";
+        log.info(String.format(format, "ID", "NAME", "PID", "STATE"));
+
+        memoryRepository.getAll().forEach(application ->
+                log.info(String.format(format,
+                        application.getAppId(),
+                        application.getName(),
+                        application.getPid(),
+                        application.getState()))
+        );
     }
 }

@@ -1,4 +1,4 @@
-package org.faketri.api.dto;
+package org.faketri.dto;
 
 
 import java.util.ArrayList;
@@ -8,13 +8,13 @@ public class AppConfig {
 
     private final List<String> commands;
 
-    private final boolean restartable;
+    private final RestartPolicy restartPolicy;
     private final int maxRestart;
     private final String profile;
 
     private AppConfig(Builder builder){
         commands = builder.commands;
-        restartable = builder.restartable;
+        restartPolicy = builder.restartPolicy;
         maxRestart = builder.maxRestart;
         profile = builder.profile;
     }
@@ -23,8 +23,8 @@ public class AppConfig {
         return commands;
     }
 
-    public boolean isRestartable() {
-        return restartable;
+    public RestartPolicy isRestartable() {
+        return restartPolicy;
     }
 
     public int getMaxRestart() {
@@ -37,7 +37,7 @@ public class AppConfig {
 
     public static class Builder {
         private final List<String> commands = new ArrayList<>();
-        private boolean restartable;
+        private RestartPolicy restartPolicy;
         private int maxRestart;
         private String profile;
 
@@ -52,8 +52,8 @@ public class AppConfig {
         }
 
 
-        public Builder setRestartable(boolean restartable){
-            this.restartable = restartable;
+        public Builder setRestartable(RestartPolicy restartable){
+            this.restartPolicy = restartable;
             return this;
         }
 

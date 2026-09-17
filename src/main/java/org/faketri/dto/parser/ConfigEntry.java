@@ -1,12 +1,13 @@
-package org.faketri.api.dto.parser;
+package org.faketri.dto.parser;
 
+import org.faketri.dto.RestartPolicy;
 import org.faketri.utils.Constants;
 
 import java.util.List;
 
 public class ConfigEntry {
     private List<String> command;
-    private boolean restart = Constants.ConfigurationConstants.CAN_RESTART;
+    private RestartPolicy restartPolicy = Constants.ConfigurationConstants.RESTART_POLICY;
     private int maxRestartCount = Constants.ConfigurationConstants.MAX_RESTART_COUNT;
     private String profile = Constants.ConfigurationConstants.DEFAULT_PROFILE;
 
@@ -18,12 +19,12 @@ public class ConfigEntry {
         this.command = command;
     }
 
-    public boolean isRestart() {
-        return restart;
+    public RestartPolicy isRestart() {
+        return restartPolicy;
     }
 
-    public void setRestart(boolean restart) {
-        this.restart = restart;
+    public void setRestartPolicy(RestartPolicy restart) {
+        this.restartPolicy = restart;
     }
 
     public int getMaxRestartCount() {

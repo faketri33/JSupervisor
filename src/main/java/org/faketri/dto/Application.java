@@ -1,6 +1,7 @@
-package org.faketri.api.dto;
+package org.faketri.dto;
 
 import org.faketri.process.ProcessHandler;
+import org.faketri.process.reader.ProcessReader;
 
 import java.io.IOException;
 import java.util.List;
@@ -50,12 +51,8 @@ public class Application {
         subscribe(p -> changeStatus(p.exitValue() != 0 ? State.FAILED : State.FINISHED));
     }
 
-    public void listen(Consumer<String> in){
-        processHandler.listen(in);
-    }
-
-    public void listen(Consumer<String> in, Consumer<String> err){
-        processHandler.listen(in, err);
+    public void listen(ProcessReader pr){
+        processHandler.listen(pr);
     }
 
     public void subscribe(Consumer<? super Process> consumer){

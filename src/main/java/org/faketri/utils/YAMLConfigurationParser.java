@@ -1,8 +1,8 @@
 package org.faketri.utils;
 
-import org.faketri.api.dto.parser.ConfigEntry;
-import org.faketri.api.dto.parser.RootConfig;
-import org.faketri.exceptions.InvalidConfigException;
+import org.faketri.dto.parser.ConfigEntry;
+import org.faketri.dto.parser.RootConfig;
+import org.faketri.exceptions.parser.InvalidConfigException;
 import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.TypeDescription;
 import org.yaml.snakeyaml.Yaml;
@@ -14,7 +14,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
 
-public class YAMLConfigurationParser implements Parser{
+public class YAMLConfigurationParser implements Parser {
 
     public RootConfig parse(Path path) throws IOException {
         try (InputStream in = Files.newInputStream(path)) {
@@ -22,7 +22,7 @@ public class YAMLConfigurationParser implements Parser{
         }
     }
 
-    private RootConfig parse(InputStream in) {
+    private static RootConfig parse(InputStream in) {
         LoaderOptions options = new LoaderOptions();
         Constructor constructor = new Constructor(RootConfig.class, options);
 
