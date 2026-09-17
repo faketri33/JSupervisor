@@ -1,17 +1,22 @@
 package org.faketri.process;
 
+import org.faketri.exceptions.ProcessAlreadyRunningException;
 import org.faketri.exceptions.ProcessNotFindException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 public class ProcessHandler {
 
+    private static final Logger log = LoggerFactory.getLogger(ProcessHandler.class);
     private final ProcessBuilder processBuilder;
     private Process process;
     private volatile boolean listening = false;
@@ -19,18 +24,20 @@ public class ProcessHandler {
     private final Set<Consumer<String>> inputListeners;
     private final Set<Consumer<String>> errListeners;
 
-    public ProcessHandler(String[] commands) {
+    public ProcessHandler(List<String> commands) {
         this.processBuilder = new ProcessBuilder(commands);
+        this.processBuilder.redirectErrorStream(true);
         this.inputListeners = new HashSet<>();
         this.errListeners = new HashSet<>();
     }
 
     public void start() throws IOException {
-        if (isAlive()) throw new RuntimeException("Procees already running");
+        if (isAlive()) throw new ProcessAlreadyRunningException("Process already running");
 
         process = processBuilder.start();
-        listening = false;
-        listen();
+        log.debug("Start process with pid {}", process.pid());
+        neededStartListen();
+        subscribeOnExit().thenAccept(p -> log.debug("Process with pid {} cancel work", p.pid()));
     }
 
     private void listen(){
@@ -53,19 +60,28 @@ public class ProcessHandler {
 
     public void listen(Consumer<String> subscriber){
         inputListeners.add(subscriber);
+        neededStartListen();
     }
 
     public void listen(Consumer<String> in, Consumer<String> err){
         inputListeners.add(in);
         errListeners.add(err);
+        neededStartListen();
     }
 
-    public CompletableFuture<Process> subscribeOnExit(){
+    private void neededStartListen(){
+        if (listening || process == null) return;
+        boolean notHaveListener = inputListeners.isEmpty() && errListeners.isEmpty();
+        if (notHaveListener) return;
+        listen();
+    }
+
+    public CompletableFuture<Process> subscribeOnExit() throws ProcessNotFindException {
         if (process == null) throw new ProcessNotFindException("Process doesn't start");
         return process.onExit();
     }
 
-    public long pid(){
+    public long pid() throws ProcessNotFindException {
         if (process == null) throw new ProcessNotFindException("Process doesn't start");
         return process.pid();
     }

@@ -3,44 +3,40 @@ package org.faketri.api.dto;
 import org.faketri.process.ProcessHandler;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;
 
 public class Application {
 
-    private final AppId appId;
-    private String name;
+    private final UUID id;
+    private final String name;
     private final ProcessHandler processHandler;
-    private final ApplicationConfiguration configuration;
+    private final AppConfig configuration;
     private State state;
 
-
-    private Application(String name, ApplicationConfiguration configuration, State state) {
-        this.appId = new AppId();
+    private Application(String name, AppConfig configuration, State state) {
+        this.id = UUID.randomUUID();
         this.name = name;
         this.configuration = configuration;
         processHandler = new ProcessHandler(configuration.getCommands());
         changeStatus(state);
     }
 
-    public static Application of(String name, String[] commands){
-        return new Application(name, new ApplicationConfiguration(commands), State.PENDING);
+    public static Application of(String name, List<String> commands){
+        return new Application(name, new AppConfig.Builder().commands(commands).build(), State.PENDING);
     }
 
-    public static Application of(String name, ApplicationConfiguration conf){
+    public static Application of(String name, AppConfig conf){
         return new Application(name, conf, State.PENDING);
     }
 
     public UUID getAppId() {
-        return appId.getId();
+        return id;
     }
 
     public String getName() {
         return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public long getPid(){
@@ -51,10 +47,7 @@ public class Application {
         processHandler.start();
         changeStatus(State.RUNNING);
 
-        subscribe(p -> {
-            if (p.exitValue() != 0) changeStatus(State.FAILED);
-            changeStatus(State.FINISHED);
-        });
+        subscribe(p -> changeStatus(p.exitValue() != 0 ? State.FAILED : State.FINISHED));
     }
 
     public void listen(Consumer<String> in){
@@ -77,7 +70,7 @@ public class Application {
         return state;
     }
 
-    public ApplicationConfiguration getConfiguration() {
+    public AppConfig getConfiguration() {
         return configuration;
     }
 

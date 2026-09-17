@@ -1,48 +1,23 @@
 package org.faketri;
 
-import org.faketri.api.dto.Application;
+import org.faketri.mapper.ConfigMapper;
+import org.faketri.utils.Constants;
+import org.faketri.utils.YAMLConfigurationParser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.*;
+import java.nio.file.Path;
 
 public class Main {
+    private static final Logger log = LoggerFactory.getLogger(Main.class);
+    private static final ApplicationManager manager = new ApplicationManager();
 
-    static Set<Application> applicationManagers = new HashSet<>();
+    public static void main(String[] args) throws IOException {
+        var cnf = new YAMLConfigurationParser().parse(Path.of("/home/faketri/git/my/JSupervisor/src/main/resources/config.yaml"));
+        cnf.getApp().forEach((k, v) -> manager.save(ConfigMapper.toDto(k, v)));
 
-    public static void main(String[] args) throws IOException, InterruptedException {
-        Application application = Application.of("My App", new String[]{"ls"});
-        application.listen(System.out::println, System.out::println);
-
-        startAndWatch(application);
-        Thread.currentThread().join();
-    }
-
-    private static void startAndWatch(Application proc) throws IOException {
-        applicationManagers.add(proc);
-
-        proc.start();
-        proc.subscribe(Main::reboot);
-
-        System.out.println("test");
-    }
-
-    private static void reboot(Process p){
-        System.out.println("Set size " + applicationManagers.size());
-        long oldPid = p.pid();
-
-        System.out.println("Process " + oldPid + " exited with value " + p.exitValue());
-
-        Application app = applicationManagers.stream()
-                .filter(a -> a.getPid() == oldPid)
-                .findFirst()
-                .orElseThrow();
-
-        try {
-            Thread.sleep(100);
-            startAndWatch(app);
-        } catch (IOException | InterruptedException e) {
-            Thread.currentThread().interrupt();
-            e.printStackTrace();
-        }
+        manager.getByName("test").listen(log::info, log::error);
+        manager.startAllByProfile(Constants.ConfigurationConstants.DEFAULT_PROFILE);
     }
 }
