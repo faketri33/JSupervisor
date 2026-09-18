@@ -37,17 +37,16 @@ public class ApplicationProperties {
         }
     }
 
+    public static int getPropertiesInt(String key) {
+        return Integer.parseInt(getProperties(key));
+    }
+
     public static String getProperties(String key) {
-        if (!isLoad) {
-            load();
-        }
+        if (!isLoad) load();
 
         String value = properties.getProperty(key);
 
-        if (value == null) {
-            return null;
-        }
-
+        if (value == null) return "";
         return resolveEnvironmentVariables(value);
     }
 

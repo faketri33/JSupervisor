@@ -1,4 +1,4 @@
-package org.faketri.dto.parser;
+package org.faketri.domain.parser;
 
 import java.util.Map;
 

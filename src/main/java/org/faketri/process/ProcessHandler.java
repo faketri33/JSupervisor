@@ -36,7 +36,11 @@ public class ProcessHandler {
     public void start() throws IOException {
         if (isAlive()) throw new ProcessAlreadyRunningException("Process already running");
 
-        process = processBuilder.start();
+        try {
+            process = processBuilder.start();
+        } catch (IOException ex){
+            processErrorHandler.forEach(h -> h.handelException(ex));
+        }
         log.debug("Start process with pid {}", process.pid());
         needToListen();
 

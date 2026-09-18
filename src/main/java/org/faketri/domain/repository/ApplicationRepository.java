@@ -1,7 +1,8 @@
-package org.faketri.dto.repository;
+package org.faketri.domain.repository;
 
-import org.faketri.dto.Application;
+import org.faketri.domain.Application;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.UUID;
 
@@ -14,6 +15,6 @@ public interface ApplicationRepository {
     Application getByName(String name);
     Application getByPid(long pid);
 
-    void startAllByProfile(String profile) ;
+    void startAllByProfile(String profile) throws IOException;
     void save(Application app);
 }

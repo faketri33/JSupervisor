@@ -1,6 +1,6 @@
-package org.faketri.dto.parser;
+package org.faketri.domain.parser;
 
-import org.faketri.dto.RestartPolicy;
+import org.faketri.domain.RestartPolicy;
 import org.faketri.utils.Constants;
 
 import java.util.List;

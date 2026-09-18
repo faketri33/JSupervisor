@@ -1,6 +1,6 @@
 package org.faketri.utils;
 
-import org.faketri.dto.parser.RootConfig;
+import org.faketri.domain.parser.RootConfig;
 
 import java.io.IOException;
 import java.nio.file.Path;

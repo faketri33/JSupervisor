@@ -1,4 +1,4 @@
-package org.faketri.dto;
+package org.faketri.domain;
 
 import org.faketri.process.ProcessErrorHandler;
 import org.faketri.process.ProcessHandler;
@@ -48,7 +48,6 @@ public class Application {
     public void start() throws IOException {
         processHandler.start();
         changeStatus(State.RUNNING);
-
         subscribe(p -> changeStatus(p.exitValue() != 0 ? State.FAILED : State.FINISHED));
     }
 

@@ -1,8 +1,8 @@
 package org.faketri.mapper;
 
-import org.faketri.dto.AppConfig;
-import org.faketri.dto.Application;
-import org.faketri.dto.parser.ConfigEntry;
+import org.faketri.domain.AppConfig;
+import org.faketri.domain.Application;
+import org.faketri.domain.parser.ConfigEntry;
 
 public class ConfigMapper {
     private ConfigMapper(){}

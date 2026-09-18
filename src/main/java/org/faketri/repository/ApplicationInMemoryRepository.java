@@ -1,7 +1,7 @@
 package org.faketri.repository;
 
-import org.faketri.dto.Application;
-import org.faketri.dto.repository.ApplicationRepository;
+import org.faketri.domain.Application;
+import org.faketri.domain.repository.ApplicationRepository;
 import org.faketri.exceptions.application.ApplicationNotFindException;
 import org.faketri.utils.CheckedPredicate;
 import org.slf4j.Logger;
@@ -53,14 +53,9 @@ public class ApplicationInMemoryRepository implements ApplicationRepository {
             .orElseThrow(() -> new ApplicationNotFindException("Cannot find application with process pid " + pid));
     }
 
-    public void startAllByProfile(String profile) {
-        getByProfile(profile).forEach(a -> {
-            try {
-                a.start();
-            } catch (IOException e) {
-                log.error("Cannot start application - {}\nError - {}", a.getName(), e.getMessage());
-            }
-        });
+    public void startAllByProfile(String profile) throws IOException {
+        Collection<Application> apps = getByProfile(profile);
+        for (var app : apps) app.start();
     }
 
     public void save(Application app){

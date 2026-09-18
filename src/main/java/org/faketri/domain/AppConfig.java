@@ -1,4 +1,4 @@
-package org.faketri.dto;
+package org.faketri.domain;
 
 
 import java.util.ArrayList;

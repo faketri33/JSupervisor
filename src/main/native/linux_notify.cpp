@@ -33,12 +33,11 @@ extern "C" {
         DBusMessageIter iter;
         dbus_message_iter_init_append(dbusMessage, &iter);
 
-        const char* appName = "JSupervisor";
         const char* appIcon = "";
         dbus_uint32_t replacesId = 0;;
         dbus_int32_t expireTimeout = -1;
 
-        dbus_message_iter_append_basic(&iter, DBUS_TYPE_STRING, &appName);
+        dbus_message_iter_append_basic(&iter, DBUS_TYPE_STRING, &titleStr);
         dbus_message_iter_append_basic(&iter, DBUS_TYPE_UINT32, &replacesId);
         dbus_message_iter_append_basic(&iter, DBUS_TYPE_STRING, &appIcon);
         dbus_message_iter_append_basic(&iter, DBUS_TYPE_STRING, &titleStr);
