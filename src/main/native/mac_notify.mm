@@ -1,5 +1,5 @@
 #include <jni.h>
-#include "linux_notify.h"
+#include "mac_notify.h"
 #import <Foundation/Foundation.h>
 #import <UserNotifications/UserNotifications.h>
 
