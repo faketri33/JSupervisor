@@ -13,6 +13,7 @@ public interface Constants {
     class UnixServerConfiguration{
         private UnixServerConfiguration(){}
 
-        public static final int PORT = ApplicationProperties.getPropertiesInt("server.port");
+        public static final String DIR_NAME = "jsup";
+        public static final String SOCK_NAME = DIR_NAME + ".sock";
     }
 }

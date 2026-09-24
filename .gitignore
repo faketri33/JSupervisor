@@ -1,3 +1,5 @@
+.vscode
+
 target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
@@ -5,7 +7,7 @@ target/
 .kotlin
 
 JSupervisorDev.app/
-src/main/native/build/
+src/main/native/build
 
 ### IntelliJ IDEA ###
 .idea/modules.xml

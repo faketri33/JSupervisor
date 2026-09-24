@@ -7,7 +7,7 @@ import org.faketri.process.reader.ProcessReader;
 import org.faketri.repository.ApplicationInMemoryRepository;
 import org.faketri.unixsocket.ChannelListener;
 import org.faketri.unixsocket.RequestHandler;
-import org.faketri.unixsocket.ServerChannel;
+import org.faketri.unixsocket.UnixServerSocket;
 import org.faketri.unixsocket.dto.Request;
 import org.faketri.utils.Constants;
 import org.faketri.utils.NotificationSystem;
@@ -15,7 +15,6 @@ import org.faketri.utils.YAMLConfigurationParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.*;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
@@ -38,12 +37,14 @@ public class Main {
                 ByteBuffer bf = ByteBuffer.allocate(1024);
                 if (channel.read(bf) != -1) {
                     bf.flip();
-
                     String request = StandardCharsets.UTF_8.decode(bf).toString();
-
                     handler.handle(new Request(request, new String[]{}));
+                    ByteBuffer out = ByteBuffer.wrap("Hello\n".getBytes(StandardCharsets.UTF_8));
+                    while (out.hasRemaining()) {
+                        channel.write(out);
+                    }
                 }
-                close();
+
             }
 
             @Override
@@ -53,7 +54,7 @@ public class Main {
             }
         };
 
-        ServerChannel serverChannel = new ServerChannel(listener);
+        UnixServerSocket serverChannel = new UnixServerSocket(listener);
         new Thread(serverChannel).start();
 
         String home = System.getProperty("user.home").concat("/");
