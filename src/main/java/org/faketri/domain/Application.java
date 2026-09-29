@@ -1,8 +1,8 @@
 package org.faketri.domain;
 
-import org.faketri.process.ProcessErrorHandler;
-import org.faketri.process.ProcessHandler;
-import org.faketri.process.reader.ProcessReader;
+import org.faketri.infrastructure.process.ProcessErrorHandler;
+import org.faketri.infrastructure.process.ProcessHandler;
+import org.faketri.infrastructure.process.reader.ProcessReader;
 
 import java.io.IOException;
 import java.util.List;

@@ -1,7 +1,7 @@
 package org.faketri.utils;
 
-import org.faketri.exceptions.unixserver.BadRequestException;
-import org.faketri.exceptions.unixserver.JsonProcessingException;
+import org.faketri.infrastructure.exceptions.unixserver.BadRequestException;
+import org.faketri.infrastructure.exceptions.unixserver.JsonProcessingException;
 import org.faketri.unixsocket.dto.Frame;
 import org.faketri.unixsocket.dto.request.Request;
 import org.faketri.unixsocket.dto.response.Response;

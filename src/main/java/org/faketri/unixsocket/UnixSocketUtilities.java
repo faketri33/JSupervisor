@@ -52,10 +52,14 @@ public class UnixSocketUtilities {
         return dir;
     }
 
-    static UnixDomainSocketAddress address() throws IOException {
+    public static UnixDomainSocketAddress address() throws IOException {
         Path sock = UnixSocketUtilities.socketDir().resolve(Constants.UnixServerConfiguration.SOCK_NAME);
         Files.deleteIfExists(sock);
         return UnixDomainSocketAddress.of(sock);
+    }
+
+    public static void installDirectoryPermissions(Path path) throws IOException {
+        Files.setPosixFilePermissions(path, UnixSocketUtilities.SOCK_PERMS);
     }
 
 }

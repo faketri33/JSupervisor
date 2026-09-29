@@ -2,7 +2,7 @@ package org.faketri.utils;
 
 import org.faketri.domain.parser.ConfigEntry;
 import org.faketri.domain.parser.RootConfig;
-import org.faketri.exceptions.parser.InvalidConfigException;
+import org.faketri.infrastructure.exceptions.parser.InvalidConfigException;
 import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.TypeDescription;
 import org.yaml.snakeyaml.Yaml;
