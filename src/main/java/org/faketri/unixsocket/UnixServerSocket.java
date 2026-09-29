@@ -1,58 +1,76 @@
 package org.faketri.unixsocket;
 
-import org.faketri.utils.Constants;
-import org.faketri.utils.UnixSocketUtilities;
+import org.faketri.exceptions.unixserver.BadRequestException;
+import org.faketri.unixsocket.dto.response.ErrorResponse;
+import org.faketri.unixsocket.dto.Frame;
+import org.faketri.unixsocket.dto.request.Request;
+import org.faketri.unixsocket.dto.response.Response;
+import org.faketri.unixsocket.handlers.CommandHandler;
+import org.faketri.utils.JsonObjectParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.net.StandardProtocolFamily;
 import java.net.UnixDomainSocketAddress;
+import java.nio.channels.AsynchronousCloseException;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.nio.file.Files;
-import java.nio.file.Path;
+import java.util.concurrent.Executors;
 
 public class UnixServerSocket implements Runnable {
 
     private static final Logger log = LoggerFactory.getLogger(UnixServerSocket.class);
-
-    private final ChannelListener listener;
-
-    public UnixServerSocket(ChannelListener listener) {
-        this.listener = listener;
-    }
+    private static final JsonObjectParser parser = new JsonObjectParser();
+    private final Dispatcher dispatch = new Dispatcher();
 
     @Override
     public void run() {
-        try (var channel = ServerSocketChannel.open(StandardProtocolFamily.UNIX)){
-            Path sock = UnixSocketUtilities.socketDir().resolve(Constants.UnixServerConfiguration.SOCK_NAME);
-            Files.deleteIfExists(sock);
-            channel.bind(UnixDomainSocketAddress.of(sock));
+        try (var channel = ServerSocketChannel.open(StandardProtocolFamily.UNIX);
+             var executor = Executors.newVirtualThreadPerTaskExecutor()){
+
+            log.info("Server start");
+
+            UnixDomainSocketAddress address = UnixSocketUtilities.address();
+            channel.bind(address);
+            Files.setPosixFilePermissions(address.getPath(), UnixSocketUtilities.SOCK_PERMS);
 
             while (!Thread.currentThread().isInterrupted()) {
+                log.info("Waiting client");
                 SocketChannel client = channel.accept();
-
-                // TODO: Creating a Connection Handler
-                // First Step: Handling the Connection
-                // It decodes the user's message into a Java object
-                // and a higher-level abstraction handler
-                // works with Java objects.
-
-                // As programmers, we like to work with high-level handlers.
-                // And we don't think about what it does underneath the hood.
-                // This is next step. high-level user request handler like as in spring
-
-                Thread.ofVirtual().start(() -> {
-                    try {
-                        listener.listen(client, request -> log.debug(request.command()));
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                });
+                executor.submit(() -> accept(client));
             }
-        }catch (IOException ignored){
-            log.error(ignored.getMessage());
+        }catch (AsynchronousCloseException | InterruptedIOException ignored) {
+            Thread.currentThread().interrupt();
+        } catch (IOException ex){
+            log.error(ex.toString());
+        }
+    }
+
+    public <R extends Request, S extends Response> void registerHandler(Class<R> type, CommandHandler<R, S> handler) {
+        dispatch.register(type, handler);
+    }
+
+    private void accept(SocketChannel channel) {
+        try (channel){
+            Frame frame = FrameReader.read(channel);
+            Response response;
+            try {
+                Request request = parser.decode(frame);
+                response = dispatch.dispatch(request);
+            } catch (BadRequestException e) {
+                response = new ErrorResponse("BAD_REQUEST", e.getMessage());
+            } catch (Exception e) {
+                log.error("Handler failed", e);
+                response = new ErrorResponse("INTERNAL", "internal error");
+            }
+
+            FrameWriter.write(channel, parser.encode(response));
+            log.info("{}", response);
+        } catch (IOException ig){
+            log.error(ig.getMessage());
         }
     }
 }

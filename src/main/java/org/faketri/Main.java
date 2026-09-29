@@ -5,10 +5,14 @@ import org.faketri.process.reader.ConsoleOutputProcessReader;
 import org.faketri.process.reader.InFileProcessReader;
 import org.faketri.process.reader.ProcessReader;
 import org.faketri.repository.ApplicationInMemoryRepository;
-import org.faketri.unixsocket.ChannelListener;
-import org.faketri.unixsocket.RequestHandler;
 import org.faketri.unixsocket.UnixServerSocket;
-import org.faketri.unixsocket.dto.Request;
+import org.faketri.unixsocket.dto.request.AllRequest;
+import org.faketri.unixsocket.dto.request.RunRequest;
+import org.faketri.unixsocket.dto.request.StopRequest;
+import org.faketri.unixsocket.dto.response.AppInfo;
+import org.faketri.unixsocket.dto.response.AppsResponse;
+import org.faketri.unixsocket.dto.response.ErrorResponse;
+import org.faketri.unixsocket.dto.response.OkResponse;
 import org.faketri.utils.Constants;
 import org.faketri.utils.NotificationSystem;
 import org.faketri.utils.YAMLConfigurationParser;
@@ -16,9 +20,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.channels.SocketChannel;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 
 public class Main {
@@ -26,36 +27,37 @@ public class Main {
     private static final ApplicationInMemoryRepository memoryRepository = new ApplicationInMemoryRepository();
 
     public static void main(String[] args) throws IOException, InterruptedException {
-        if (args.length == 0) return;
+        if (args.length == 0) {
+            log.error("No one argument present");
+            return;
+        }
+        var server = new UnixServerSocket();
 
-        ChannelListener listener = new ChannelListener() {
-            SocketChannel client;
-            @Override
-            public void listen(SocketChannel channel, RequestHandler handler) throws IOException {
-                log.debug("Client connected");
-                client = channel;
-                ByteBuffer bf = ByteBuffer.allocate(1024);
-                if (channel.read(bf) != -1) {
-                    bf.flip();
-                    String request = StandardCharsets.UTF_8.decode(bf).toString();
-                    handler.handle(new Request(request, new String[]{}));
-                    ByteBuffer out = ByteBuffer.wrap("Hello\n".getBytes(StandardCharsets.UTF_8));
-                    while (out.hasRemaining()) {
-                        channel.write(out);
-                    }
-                }
+        server.registerHandler(AllRequest.class,  (req) -> {
+            log.info("Handler client request {}", req);
+            var appsInfo = memoryRepository.getAll().stream()
+                    .map(a -> new AppInfo(a.getName(), a.getAppId().toString(), -1, a.getConfiguration().getCommands()))
+                    .toList();
+            return new AppsResponse(appsInfo);
+        }) ;
 
+        server.registerHandler(RunRequest.class, (req -> {
+            log.info("Handler client request {}", req);
+            var app = memoryRepository.getByName(req.app());
+            app.start();
+            return new OkResponse("Start");
+        }));
+
+        server.registerHandler(StopRequest.class, (req -> {
+            log.info("Handler client request {}", req);
+            try {
+                throw new RuntimeException("test");
+            } catch (Exception ex){
+                return new ErrorResponse(ex.getClass().getSimpleName(), ex.getMessage());
             }
+        }));
 
-            @Override
-            public void close() throws IOException {
-                log.debug("Close connection");
-                client.close();
-            }
-        };
-
-        UnixServerSocket serverChannel = new UnixServerSocket(listener);
-        new Thread(serverChannel).start();
+        new Thread(server).start();
 
         String home = System.getProperty("user.home").concat("/");
 
@@ -70,7 +72,7 @@ public class Main {
         app.listen(toConsole);
         app.listen(toFile);
         // Stupid handler
-        app.errHandle(ex -> NotificationSystem.notify("JSupervisor", ex.getMessage()));
+        app.errHandle(ex -> NotificationSystem.notify(Constants.Global.APP_NAME, ex.getMessage()));
 
         memoryRepository.startAllByProfile(Constants.ConfigurationConstants.DEFAULT_PROFILE);
 

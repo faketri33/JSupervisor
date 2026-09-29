@@ -1,8 +1,10 @@
-package org.faketri.utils;
+package org.faketri.unixsocket;
 
 import com.sun.security.auth.module.UnixSystem;
+import org.faketri.utils.Constants;
 
 import java.io.IOException;
+import java.net.UnixDomainSocketAddress;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
@@ -15,19 +17,24 @@ import java.util.Set;
 public class UnixSocketUtilities {
     private UnixSocketUtilities(){}
 
-    private static final Set<PosixFilePermission> DIR_PERMS = PosixFilePermissions.fromString("rwx------");
-    private static final Set<PosixFilePermission> SOCK_PERMS = PosixFilePermissions.fromString("rw-------");
+    static final Set<PosixFilePermission> DIR_PERMS = PosixFilePermissions.fromString("rwx------");
+    static final Set<PosixFilePermission> SOCK_PERMS = PosixFilePermissions.fromString("rw-------");
 
 
-    private static long myUid() throws IOException {
+    private static long myUid() {
         return new UnixSystem().getUid();
     }
 
-    public static Path socketDir() throws IOException {
+    private static Path baseDir() {
         String xdg = System.getenv("XDG_RUNTIME_DIR");
-        Path dir = (xdg != null && !xdg.isEmpty())
-                ? Path.of(xdg, Constants.UnixServerConfiguration.DIR_NAME)
-                : Path.of("/tmp", Constants.UnixServerConfiguration.DIR_NAME + "-" + myUid());
+        if (xdg != null && !xdg.isEmpty()) {
+            return Path.of(xdg);
+        }
+        return Path.of(System.getProperty("user.home"), ".local", "state");
+    }
+
+    private static Path socketDir() throws IOException {
+        Path dir = baseDir().resolve(Constants.UnixServerConfiguration.DIR_NAME);
 
         try {
             // mode is set atomically at creation (only narrowed by umask, never widened)
@@ -44,4 +51,11 @@ public class UnixSocketUtilities {
         }
         return dir;
     }
+
+    static UnixDomainSocketAddress address() throws IOException {
+        Path sock = UnixSocketUtilities.socketDir().resolve(Constants.UnixServerConfiguration.SOCK_NAME);
+        Files.deleteIfExists(sock);
+        return UnixDomainSocketAddress.of(sock);
+    }
+
 }

@@ -3,8 +3,10 @@
 **JSupervisor** — простой менеджер процессов на Java, позволяющий запускать приложения, отслеживать их состояние и получать вывод логов в реальном времени.
 ![JSupervisor](assets/output.png)
 
-![img.png](assets/macos_notify.png)
-![img_1.png](assets/linux_notify.png)
+![macos notify](assets/macos_notify.png)
+![DBUS notify by linux](assets/linux_notify.png)
+
+![Unix domain send message](assets/unixdomain.png)
 ## Возможности
 
 * Запуск и управление процессами.

@@ -4,15 +4,11 @@ import org.faketri.domain.Application;
 import org.faketri.domain.repository.ApplicationRepository;
 import org.faketri.exceptions.application.ApplicationNotFindException;
 import org.faketri.utils.CheckedPredicate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.*;
 
 public class ApplicationInMemoryRepository implements ApplicationRepository {
-
-    private static final Logger log = LoggerFactory.getLogger(ApplicationInMemoryRepository.class);
 
     private final Set<Application> applications;
 
@@ -47,7 +43,7 @@ public class ApplicationInMemoryRepository implements ApplicationRepository {
 
     public Application getByPid(long pid){
         return applications.stream()
-            // skip not started process from list
+            // skip not started process from list, because he doesn't have pid
             .filter(CheckedPredicate.unchecked(a -> a.getPid() == pid))
             .findFirst()
             .orElseThrow(() -> new ApplicationNotFindException("Cannot find application with process pid " + pid));

@@ -2,6 +2,7 @@ app:
   test:
     command:
       - ls
+      - -l
     restartPolicy: ALWAYS
 
   myapp:
