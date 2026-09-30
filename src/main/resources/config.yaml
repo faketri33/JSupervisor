@@ -1,8 +1,8 @@
 app:
   test:
     command:
-      - ls
-      - -l
+      - l1s
+      - -1l
     restartPolicy: ALWAYS
 
   myapp:

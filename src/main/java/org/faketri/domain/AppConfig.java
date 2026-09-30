@@ -12,14 +12,14 @@ public class AppConfig {
     private final int maxRestart;
     private final String profile;
 
-    private AppConfig(Builder builder){
+    private AppConfig(Builder builder) {
         commands = builder.commands;
         restartPolicy = builder.restartPolicy;
         maxRestart = builder.maxRestart;
         profile = builder.profile;
     }
 
-    public List<String>  getCommands() {
+    public List<String> getCommands() {
         return commands;
     }
 
@@ -41,33 +41,33 @@ public class AppConfig {
         private int maxRestart;
         private String profile;
 
-        public Builder commands(String command){
+        public Builder commands(String command) {
             this.commands.add(command);
             return this;
         }
 
-        public Builder commands(List<String> command){
+        public Builder commands(List<String> command) {
             this.commands.addAll(command);
             return this;
         }
 
 
-        public Builder setRestartable(RestartPolicy restartable){
+        public Builder setRestartable(RestartPolicy restartable) {
             this.restartPolicy = restartable;
             return this;
         }
 
-        public Builder maxRestartCount(int maxRestart){
+        public Builder maxRestartCount(int maxRestart) {
             this.maxRestart = maxRestart;
             return this;
         }
 
-        public Builder profile(String profile){
+        public Builder profile(String profile) {
             this.profile = profile;
             return this;
         }
 
-        public AppConfig build(){
+        public AppConfig build() {
             return new AppConfig(this);
         }
     }

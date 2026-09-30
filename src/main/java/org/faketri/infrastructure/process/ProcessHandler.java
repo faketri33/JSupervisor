@@ -19,12 +19,10 @@ public class ProcessHandler {
     private static final Logger log = LoggerFactory.getLogger(ProcessHandler.class);
 
     private final ProcessBuilder processBuilder;
-    private Process process;
-
-    private volatile boolean listening = false;
-
     private final Set<ProcessReader> inputListeners;
     private final Set<ProcessErrorHandler> processErrorHandler;
+    private Process process;
+    private volatile boolean listening = false;
 
     public ProcessHandler(List<String> commands) {
         this.processBuilder = new ProcessBuilder(commands);
@@ -33,33 +31,37 @@ public class ProcessHandler {
         this.processErrorHandler = ConcurrentHashMap.newKeySet();
     }
 
-    public void start() throws IOException {
+    public void start() {
         if (isAlive()) throw new ProcessAlreadyRunningException("Process already running");
 
         try {
             process = processBuilder.start();
-        } catch (IOException ex){
+            log.debug("Start process with pid {}", process.pid());
+        } catch (IOException ex) {
             processErrorHandler.forEach(h -> h.handelException(ex));
         }
-        log.debug("Start process with pid {}", process.pid());
+
         needToListen();
 
-        subscribeOnExit().thenAccept(p -> log.debug("Process with pid {} cancel work", p.pid()));
+        subscribeOnExit()
+                .thenAccept(p -> {
+                    log.debug("Process with pid {} cancel work", p.pid());
+                });
     }
 
-    private void listen(){
+    private void listen() {
         if (listening) return;
         listening = true;
 
         Thread.ofVirtual().start(() -> {
-            try(BufferedReader bf = new BufferedReader(new InputStreamReader(process.getInputStream()))){
+            try (BufferedReader bf = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
                 String line;
                 while ((line = bf.readLine()) != null)
                     for (var subscriber : inputListeners)
                         subscriber.read(line);
-            } catch (IOException ex){
+            } catch (IOException ex) {
                 processErrorHandler.forEach(err -> err.handelException(ex));
-            }finally {
+            } finally {
                 for (var subscriber : inputListeners) {
                     try {
                         subscriber.close();
@@ -74,16 +76,16 @@ public class ProcessHandler {
         });
     }
 
-    public void listen(ProcessReader pr){
+    public void listen(ProcessReader pr) {
         inputListeners.add(pr);
         needToListen();
     }
 
-    public void errHandle(ProcessErrorHandler err){
+    public void errHandle(ProcessErrorHandler err) {
         processErrorHandler.add(err);
     }
 
-    private void needToListen(){
+    private void needToListen() {
         if (listening || process == null) return;
         boolean notHaveListener = inputListeners.isEmpty() & processErrorHandler.isEmpty();
         if (notHaveListener) return;
@@ -100,7 +102,7 @@ public class ProcessHandler {
         return process.pid();
     }
 
-    public boolean isAlive(){
+    public boolean isAlive() {
         return process != null && process.isAlive();
     }
 }

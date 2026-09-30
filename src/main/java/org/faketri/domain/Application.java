@@ -4,9 +4,9 @@ import org.faketri.infrastructure.process.ProcessErrorHandler;
 import org.faketri.infrastructure.process.ProcessHandler;
 import org.faketri.infrastructure.process.reader.ProcessReader;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 public class Application {
@@ -15,6 +15,7 @@ public class Application {
     private final String name;
     private final ProcessHandler processHandler;
     private final AppConfig configuration;
+    private final AtomicInteger restartCount = new AtomicInteger(0);
     private State state;
 
     private Application(String name, AppConfig configuration, State state) {
@@ -25,11 +26,11 @@ public class Application {
         changeStatus(state);
     }
 
-    public static Application of(String name, List<String> commands){
+    public static Application of(String name, List<String> commands) {
         return new Application(name, new AppConfig.Builder().commands(commands).build(), State.PENDING);
     }
 
-    public static Application of(String name, AppConfig conf){
+    public static Application of(String name, AppConfig conf) {
         return new Application(name, conf, State.PENDING);
     }
 
@@ -41,30 +42,36 @@ public class Application {
         return name;
     }
 
-    public long getPid(){
+    public long getPid() {
         return processHandler.pid();
     }
 
-    public void start() throws IOException {
+    public void start() {
         processHandler.start();
         changeStatus(State.RUNNING);
         subscribe(p -> changeStatus(p.exitValue() != 0 ? State.FAILED : State.FINISHED));
     }
 
-    public void listen(ProcessReader pr){
+    public void listen(ProcessReader pr) {
         processHandler.listen(pr);
     }
 
-    public void errHandle(ProcessErrorHandler err){
+    public void errHandle(ProcessErrorHandler err) {
         processHandler.errHandle(err);
     }
 
-    public void subscribe(Consumer<? super Process> consumer){
+    public void subscribe(Consumer<? super Process> consumer) {
         processHandler.subscribeOnExit().thenAccept(consumer);
     }
 
-    private void changeStatus(State state){
+    private void changeStatus(State state) {
         this.state = state;
+
+        // stupid check for test
+        if (!configuration.isRestartable().equals(RestartPolicy.NEVER)
+                && state.equals(State.FAILED)
+                && restartCount.getAndIncrement() < configuration.getMaxRestart())
+            start();
     }
 
     public State getState() {
@@ -75,7 +82,7 @@ public class Application {
         return configuration;
     }
 
-    public boolean isAlive(){
+    public boolean isAlive() {
         return processHandler.isAlive();
     }
 }

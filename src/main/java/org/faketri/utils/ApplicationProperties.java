@@ -10,14 +10,13 @@ import java.util.regex.Pattern;
 
 public class ApplicationProperties {
 
-    private ApplicationProperties() {
-    }
-
     private static final Properties properties = new Properties();
-    private static boolean isLoad = false;
-
     private static final Pattern ENV_PATTERN =
             Pattern.compile("\\$\\{([^}]+)}");
+    private static boolean isLoad = false;
+
+    private ApplicationProperties() {
+    }
 
     private static void load() {
         try (InputStream input = Main.class
