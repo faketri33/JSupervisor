@@ -37,6 +37,7 @@ public class ProcessHandler {
         try {
             process = processBuilder.start();
             log.debug("Start process with pid {}", process.pid());
+            log.debug("commands {}", processBuilder.command());
         } catch (IOException ex) {
             processErrorHandler.forEach(h -> h.handelException(ex));
         }

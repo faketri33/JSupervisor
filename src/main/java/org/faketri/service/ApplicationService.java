@@ -20,8 +20,6 @@ public interface ApplicationService {
 
     Application getByPid(long pid) throws ApplicationNotFindException;
 
-    void startByPid(long pid) throws ApplicationException;
-
     void startById(UUID id);
 
     void startByName(String name);

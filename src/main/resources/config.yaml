@@ -1,8 +1,8 @@
 app:
   test:
     command:
-      - l1s
-      - -1l
+      - ping
+      - 8.8.8.8
     restartPolicy: ALWAYS
 
   myapp:

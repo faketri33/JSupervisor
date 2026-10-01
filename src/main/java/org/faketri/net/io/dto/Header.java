@@ -1,4 +1,4 @@
-package org.faketri.net.socket.dto;
+package org.faketri.net.io.dto;
 
 import org.faketri.utils.Constants;
 

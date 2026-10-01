@@ -1,4 +1,4 @@
-package org.faketri.net.socket.dto.response;
+package org.faketri.net.io.dto.response;
 
 public record OkResponse(String status) implements Response {
     public OkResponse() {

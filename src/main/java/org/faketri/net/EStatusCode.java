@@ -1,4 +1,4 @@
-package org.faketri.net.socket;
+package org.faketri.net;
 
 public enum EStatusCode {
     BAD_REQUEST,

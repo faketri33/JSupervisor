@@ -1,4 +1,4 @@
-package org.faketri.net.socket.dto.response;
+package org.faketri.net.io.dto.response;
 
 import java.util.List;
 

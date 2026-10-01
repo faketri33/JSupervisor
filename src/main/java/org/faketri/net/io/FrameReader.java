@@ -1,7 +1,7 @@
 package org.faketri.net.io;
 
-import org.faketri.net.socket.dto.Frame;
-import org.faketri.net.socket.dto.Header;
+import org.faketri.net.io.dto.Frame;
+import org.faketri.net.io.dto.Header;
 import org.faketri.utils.Constants;
 
 import java.io.EOFException;

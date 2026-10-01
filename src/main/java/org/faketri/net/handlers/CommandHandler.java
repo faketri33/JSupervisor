@@ -1,8 +1,8 @@
-package org.faketri.net.socket.handlers;
+package org.faketri.net.handlers;
 
 import org.faketri.infrastructure.exceptions.unixserver.ErrorRequest;
-import org.faketri.net.socket.dto.request.Request;
-import org.faketri.net.socket.dto.response.Response;
+import org.faketri.net.io.dto.request.Request;
+import org.faketri.net.io.dto.response.Response;
 
 @FunctionalInterface
 public interface CommandHandler<R extends Request, O extends Response> {

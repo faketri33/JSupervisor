@@ -1,4 +1,4 @@
-package org.faketri.net.socket.dto.response;
+package org.faketri.net.io.dto.response;
 
 
 public record ErrorResponse(String status, String code, String message) implements Response {

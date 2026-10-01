@@ -2,6 +2,7 @@ package org.faketri.infrastructure.repository;
 
 import org.faketri.domain.Application;
 import org.faketri.domain.repository.ApplicationRepository;
+import org.faketri.infrastructure.process.reader.ConsoleOutputProcessReader;
 import org.faketri.utils.function.CheckedPredicate;
 import org.faketri.infrastructure.exceptions.application.ApplicationException;
 import org.faketri.infrastructure.exceptions.application.ApplicationNotFindException;
@@ -50,12 +51,9 @@ public class ApplicationInMemoryRepository implements ApplicationRepository {
                 .orElseThrow(() -> new ApplicationNotFindException("Cannot find application with process pid " + pid));
     }
 
-    public void startAllByProfile(String profile){
-        var apps = applications.stream().filter(a -> a.getConfiguration().getProfile().equalsIgnoreCase(profile)).collect(Collectors.toSet());
-        for (var app : apps) app.start();
-    }
-
     public void save(Application app) {
+        // debug out for process
+        app.listen(new ConsoleOutputProcessReader(System.out));
         applications.add(app);
     }
 }

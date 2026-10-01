@@ -1,4 +1,4 @@
-package org.faketri.net.socket.dto.request;
+package org.faketri.net.io.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;

@@ -1,6 +1,6 @@
 package org.faketri.net.io;
 
-import org.faketri.net.socket.dto.Header;
+import org.faketri.net.io.dto.Header;
 import org.faketri.utils.Constants;
 
 import java.io.IOException;
