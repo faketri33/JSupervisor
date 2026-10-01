@@ -6,7 +6,7 @@ public class FilesExtends {
     }
 
 
-    public static String getFileExtension(String name){
+    public static String getFileExtension(String name) {
         int lastIndexOf = name.lastIndexOf(".");
         if (lastIndexOf == -1) return "";
 

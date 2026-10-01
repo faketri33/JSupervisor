@@ -2,13 +2,12 @@ package org.faketri.infrastructure.repository;
 
 import org.faketri.domain.Application;
 import org.faketri.domain.repository.ApplicationRepository;
-import org.faketri.infrastructure.process.reader.ConsoleOutputProcessReader;
-import org.faketri.utils.function.CheckedPredicate;
 import org.faketri.infrastructure.exceptions.application.ApplicationException;
 import org.faketri.infrastructure.exceptions.application.ApplicationNotFindException;
+import org.faketri.infrastructure.process.reader.ConsoleOutputProcessReader;
+import org.faketri.utils.function.CheckedPredicate;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class ApplicationInMemoryRepository implements ApplicationRepository {
 

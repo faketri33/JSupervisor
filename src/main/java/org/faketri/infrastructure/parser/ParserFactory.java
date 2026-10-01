@@ -6,7 +6,7 @@ public class ParserFactory {
     }
 
     // on future
-    public static Parser of(String type){
+    public static Parser of(String type) {
         return switch (type) {
             case "yaml" -> new YAMLConfigurationParser();
             default -> throw new IllegalStateException("Unexpected value: " + type);

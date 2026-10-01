@@ -12,23 +12,23 @@ public class AppController {
 
     private final ApplicationService service;
 
-    public AppController(ApplicationService service){
+    public AppController(ApplicationService service) {
         this.service = service;
     }
 
-    public AppsResponse getAll(AllRequest request){
+    public AppsResponse getAll(AllRequest request) {
         return new AppsResponse(service.getAll()
                 .stream()
                 .map(a -> new AppInfo(a.getName(), a.getAppId().toString(), -1, a.getConfiguration().getCommands()))
                 .toList());
     }
 
-    public OkResponse run(RunRequest request){
+    public OkResponse run(RunRequest request) {
         service.startByName(request.app());
         return new OkResponse();
     }
 
-    public void registerTo(ServerChannel channel){
+    public void registerTo(ServerChannel channel) {
         channel.customHandler(AllRequest.class, this::getAll);
         channel.customHandler(RunRequest.class, this::run);
     }
