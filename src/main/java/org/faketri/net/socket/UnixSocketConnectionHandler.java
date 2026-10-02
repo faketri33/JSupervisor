@@ -2,9 +2,8 @@ package org.faketri.net.socket;
 
 import org.faketri.infrastructure.exceptions.unixserver.ErrorRequest;
 import org.faketri.infrastructure.parser.JsonObjectParser;
-import org.faketri.net.handlers.CommandHandler;
+import org.faketri.net.RequestDispatcherCommand;
 import org.faketri.net.handlers.ConnectionHandler;
-import org.faketri.net.handlers.Dispatcher;
 import org.faketri.net.io.FrameReader;
 import org.faketri.net.io.FrameWriter;
 import org.faketri.net.io.dto.Frame;
@@ -16,12 +15,17 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.channels.SocketChannel;
+import java.util.Objects;
 
 public final class UnixSocketConnectionHandler implements ConnectionHandler {
     private static final Logger log = LoggerFactory.getLogger(UnixSocketConnectionHandler.class);
 
     private static final JsonObjectParser parser = new JsonObjectParser();
-    private final Dispatcher dispatch = new Dispatcher();
+    private final RequestDispatcherCommand dispatch;
+
+    public UnixSocketConnectionHandler(RequestDispatcherCommand dispatch) {
+        this.dispatch = Objects.requireNonNull(dispatch);
+    }
 
     @Override
     public void handle(SocketChannel channel) {
@@ -33,12 +37,6 @@ public final class UnixSocketConnectionHandler implements ConnectionHandler {
             log.error(ig.getMessage());
         }
     }
-
-    @Override
-    public <REQ extends Request, RES extends Response> void addHandler(Class<REQ> type, CommandHandler<REQ, RES> handler) {
-        dispatch.register(type, handler);
-    }
-
 
     private Response safeProcessRequest(Frame frame) {
         Response response;

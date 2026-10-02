@@ -7,14 +7,18 @@ import org.faketri.infrastructure.exceptions.application.ApplicationNotFindExcep
 import org.faketri.infrastructure.process.reader.ConsoleOutputProcessReader;
 import org.faketri.utils.function.CheckedPredicate;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ApplicationInMemoryRepository implements ApplicationRepository {
 
     private final Set<Application> applications;
 
     public ApplicationInMemoryRepository() {
-        this.applications = new HashSet<>();
+        this.applications = ConcurrentHashMap.newKeySet();
     }
 
     public Collection<Application> getAll() {

@@ -32,7 +32,7 @@ public interface Constants {
     class HeaderConfiguration {
         public static final int MIN_SIZE = 9;
         public static final short MAGIC = (short) 0xC11D;
-        public static int VERSION = 1;
+        public static final int VERSION = 1;
 
         private HeaderConfiguration() {
         }

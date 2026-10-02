@@ -1,7 +1,6 @@
 package org.faketri.infrastructure.process.reader;
 
 
-import java.io.IOException;
 import java.io.PrintStream;
 
 public class ConsoleOutputProcessReader implements ProcessReader {
@@ -12,12 +11,12 @@ public class ConsoleOutputProcessReader implements ProcessReader {
     }
 
     @Override
-    public void read(String line) throws IOException {
+    public void read(String line) {
         stream.println(line);
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() {
         if (stream != null) stream.flush();
     }
 }

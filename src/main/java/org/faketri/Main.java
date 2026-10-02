@@ -12,12 +12,16 @@ import java.nio.file.Path;
 public class Main {
     private static final Logger log = LoggerFactory.getLogger(Main.class);
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         if (args.length == 0) {
             log.error("No one argument present");
             return;
         }
 
-        AppInstance.create(Path.of(args[0])).start();
+        try {
+            AppInstance.create(Path.of(args[0])).start();
+        } catch (IOException ex) {
+            log.debug(ex.getMessage());
+        }
     }
 }

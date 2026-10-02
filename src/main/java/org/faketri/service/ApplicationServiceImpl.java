@@ -5,7 +5,6 @@ import org.faketri.domain.repository.ApplicationRepository;
 import org.faketri.infrastructure.exceptions.application.ApplicationException;
 import org.faketri.infrastructure.exceptions.application.ApplicationNotFindException;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.UUID;
 
@@ -83,7 +82,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     @Override
-    public void startAllByProfile(String profile) throws IOException {
+    public void startAllByProfile(String profile) {
         var apps = getByProfile(profile);
         for (var app : apps) app.start();
     }

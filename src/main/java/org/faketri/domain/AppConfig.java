@@ -3,6 +3,7 @@ package org.faketri.domain;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class AppConfig {
 
@@ -33,6 +34,25 @@ public class AppConfig {
 
     public String getProfile() {
         return profile;
+    }
+
+    @Override
+    public final boolean equals(Object o) {
+        if (!(o instanceof AppConfig appConfig)) return false;
+
+        return maxRestart == appConfig.maxRestart
+                && commands.equals(appConfig.commands)
+                && restartPolicy == appConfig.restartPolicy
+                && Objects.equals(profile, appConfig.profile);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = commands.hashCode();
+        result = 31 * result + Objects.hashCode(restartPolicy);
+        result = 31 * result + Integer.hashCode(maxRestart);
+        result = 31 * result + Objects.hashCode(profile);
+        return result;
     }
 
     public static class Builder {

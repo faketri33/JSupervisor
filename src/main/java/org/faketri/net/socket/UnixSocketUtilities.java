@@ -14,8 +14,16 @@ import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.util.Set;
 
+/**
+ * Utility methods for preparing and validating filesystem locations used by the
+ * Unix domain socket server.
+ *
+ * <p>All operations assume a POSIX-compliant filesystem.
+ */
 class UnixSocketUtilities {
+    // Permissions applied to the socket directory: owner-only read, write and execute.
     static final Set<PosixFilePermission> DIR_PERMS = PosixFilePermissions.fromString("rwx------");
+    // Permissions applied to the socket file: owner-only read and write.
     static final Set<PosixFilePermission> SOCK_PERMS = PosixFilePermissions.fromString("rw-------");
 
     private UnixSocketUtilities() {
@@ -52,14 +60,27 @@ class UnixSocketUtilities {
         return dir;
     }
 
+    /**
+     * Resolves the Unix domain socket address used by the server, ensuring that any
+     * pre-existing socket file at that location is removed.
+     *
+     * @return address to bind the server socket to
+     * @throws IOException if the socket directory cannot be prepared or the existing
+     *                     socket file cannot be removed
+     */
     protected static UnixDomainSocketAddress address() throws IOException {
         Path sock = UnixSocketUtilities.socketDir().resolve(Constants.UnixServerConfiguration.SOCK_NAME);
         Files.deleteIfExists(sock);
         return UnixDomainSocketAddress.of(sock);
     }
 
+    /**
+     * Applies owner-only read/write permissions to the specified path.
+     *
+     * @param path path whose permissions should be updated
+     * @throws IOException if the permissions cannot be applied
+     */
     protected static void installDirectoryPermissions(Path path) throws IOException {
         Files.setPosixFilePermissions(path, UnixSocketUtilities.SOCK_PERMS);
     }
-
 }

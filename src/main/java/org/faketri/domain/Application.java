@@ -13,9 +13,12 @@ public class Application {
 
     private final UUID id;
     private final String name;
+
     private final ProcessHandler processHandler;
     private final AppConfig configuration;
+
     private final AtomicInteger restartCount = new AtomicInteger(0);
+
     private State state;
 
     private Application(String name, AppConfig configuration, State state) {
@@ -84,5 +87,20 @@ public class Application {
 
     public boolean isAlive() {
         return processHandler.isAlive();
+    }
+
+    @Override
+    public final boolean equals(Object o) {
+        if (!(o instanceof Application that)) return false;
+
+        return id.equals(that.id) && name.equals(that.name) && configuration.equals(that.configuration);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = id.hashCode();
+        result = 31 * result + name.hashCode();
+        result = 31 * result + configuration.hashCode();
+        return result;
     }
 }

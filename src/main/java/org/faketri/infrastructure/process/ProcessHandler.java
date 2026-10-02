@@ -45,9 +45,7 @@ public class ProcessHandler {
         needToListen();
 
         subscribeOnExit()
-                .thenAccept(p -> {
-                    log.debug("Process with pid {} cancel work", p.pid());
-                });
+                .thenAccept(p -> log.debug("Process with pid {} cancel work", p.pid()));
     }
 
     private void listen() {
@@ -88,7 +86,7 @@ public class ProcessHandler {
 
     private void needToListen() {
         if (listening || process == null) return;
-        boolean notHaveListener = inputListeners.isEmpty() & processErrorHandler.isEmpty();
+        boolean notHaveListener = inputListeners.isEmpty() || processErrorHandler.isEmpty();
         if (notHaveListener) return;
         listen();
     }

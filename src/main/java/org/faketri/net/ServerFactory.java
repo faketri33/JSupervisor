@@ -10,4 +10,8 @@ public class ServerFactory {
     public static ServerChannel newUnixSocketServer() {
         return UnixServerSocket.of();
     }
+
+    public static ServerChannel newUnixSocketServer(RequestDispatcherCommand dispatcherCommand) {
+        return UnixServerSocket.of(dispatcherCommand);
+    }
 }

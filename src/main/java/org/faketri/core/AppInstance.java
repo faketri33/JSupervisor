@@ -8,6 +8,7 @@ import org.faketri.infrastructure.parser.RootConfig;
 import org.faketri.infrastructure.repository.ApplicationInMemoryRepository;
 import org.faketri.net.ServerChannel;
 import org.faketri.net.ServerFactory;
+import org.faketri.net.handlers.StupidDispatcher;
 import org.faketri.service.ApplicationServiceImpl;
 import org.faketri.utils.FilesExtends;
 
@@ -19,9 +20,8 @@ public class AppInstance {
 
     private final ServerChannel server;
 
-    private AppInstance(ServerChannel server, AppController controller) {
+    private AppInstance(ServerChannel server) {
         this.server = server;
-        controller.registerTo(server);
     }
 
     public static AppInstance create(Path configPath) throws IOException {
@@ -34,10 +34,14 @@ public class AppInstance {
                 repository.save(ConfigMapper.toDto(name, app)));
 
         var controller = new AppController(new ApplicationServiceImpl(repository));
-        return new AppInstance(ServerFactory.newUnixSocketServer(), controller);
+
+        var dispatcher = new StupidDispatcher();
+        controller.registerTo(dispatcher);
+
+        return new AppInstance(ServerFactory.newUnixSocketServer(dispatcher));
     }
 
-    public int start() {
-        return server.start();
+    public void start() {
+        server.start();
     }
 }

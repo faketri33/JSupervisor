@@ -5,7 +5,7 @@ import org.faketri.domain.Application;
 import java.util.Collection;
 import java.util.UUID;
 
-public interface ApplicationRepository {
+public interface ApplicationRepository extends Repository<Application, UUID> {
 
     Collection<Application> getAll();
 

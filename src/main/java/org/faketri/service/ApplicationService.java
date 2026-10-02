@@ -4,10 +4,12 @@ import org.faketri.domain.Application;
 import org.faketri.infrastructure.exceptions.application.ApplicationException;
 import org.faketri.infrastructure.exceptions.application.ApplicationNotFindException;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.UUID;
 
+
+// TODO: Refactor the service to act as the executor of the operation
+//  (owning the business logic) instead of merely delegating calls to the repository.
 public interface ApplicationService {
 
     Collection<Application> getAll();
@@ -36,7 +38,7 @@ public interface ApplicationService {
 
     void stopByName(String name);
 
-    void startAllByProfile(String profile) throws IOException;
+    void startAllByProfile(String profile);
 
     void save(Application app);
 }

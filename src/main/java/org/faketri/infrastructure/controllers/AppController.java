@@ -1,6 +1,6 @@
 package org.faketri.infrastructure.controllers;
 
-import org.faketri.net.ServerChannel;
+import org.faketri.net.RequestDispatcherCommand;
 import org.faketri.net.io.dto.request.AllRequest;
 import org.faketri.net.io.dto.request.RunRequest;
 import org.faketri.net.io.dto.response.AppInfo;
@@ -28,8 +28,8 @@ public class AppController {
         return new OkResponse();
     }
 
-    public void registerTo(ServerChannel channel) {
-        channel.customHandler(AllRequest.class, this::getAll);
-        channel.customHandler(RunRequest.class, this::run);
+    public void registerTo(RequestDispatcherCommand dispatcherCommand) {
+        dispatcherCommand.registerNewDispatch(AllRequest.class, this::getAll);
+        dispatcherCommand.registerNewDispatch(RunRequest.class, this::run);
     }
 }
