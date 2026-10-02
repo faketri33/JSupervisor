@@ -11,11 +11,11 @@ public interface ApplicationRepository extends Repository<Application, UUID> {
 
     Collection<Application> getByProfile(String profile);
 
-    Application getById(UUID id);
+    Application get(UUID id);
 
-    Application getByName(String name);
+    Application get(String name);
 
-    Application getByPid(long pid);
+    Application get(long pid);
 
     void save(Application app);
 }

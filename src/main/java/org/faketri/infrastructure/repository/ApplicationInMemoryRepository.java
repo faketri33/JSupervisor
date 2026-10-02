@@ -32,21 +32,21 @@ public class ApplicationInMemoryRepository implements ApplicationRepository {
     }
 
     @Override
-    public Application getById(UUID id) throws ApplicationNotFindException {
+    public Application get(UUID id) throws ApplicationNotFindException {
         return applications.stream()
                 .filter(a -> a.getAppId().equals(id))
                 .findFirst()
                 .orElseThrow(() -> new ApplicationNotFindException("Cannot find application with id - " + id));
     }
 
-    public Application getByName(String name) throws ApplicationNotFindException {
+    public Application get(String name) throws ApplicationNotFindException {
         return applications.stream()
                 .filter(a -> a.getName().equalsIgnoreCase(name))
                 .findFirst()
                 .orElseThrow(() -> new ApplicationNotFindException("Cannot find application with name - " + name));
     }
 
-    public Application getByPid(long pid) throws ApplicationException {
+    public Application get(long pid) throws ApplicationException {
         return applications.stream()
                 // skip not started process from list, because he doesn't have pid
                 .filter(CheckedPredicate.unchecked(a -> a.getPid() == pid))

@@ -24,7 +24,7 @@ public class AppController {
     }
 
     public OkResponse run(RunRequest request) {
-        service.startByName(request.app());
+        service.startAll(request.app());
         return new OkResponse();
     }
 

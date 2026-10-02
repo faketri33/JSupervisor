@@ -27,62 +27,62 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     @Override
-    public Application getById(UUID id) throws ApplicationNotFindException {
-        return applicationRepository.getById(id);
+    public Application get(UUID id) throws ApplicationNotFindException {
+        return applicationRepository.get(id);
     }
 
     @Override
-    public Application getByName(String name) throws ApplicationNotFindException {
-        return applicationRepository.getByName(name);
+    public Application get(String name) throws ApplicationNotFindException {
+        return applicationRepository.get(name);
     }
 
     @Override
-    public Application getByPid(long pid) throws ApplicationNotFindException {
-        return applicationRepository.getByPid(pid);
+    public Application get(long pid) throws ApplicationNotFindException {
+        return applicationRepository.get(pid);
     }
 
     @Override
-    public void startById(UUID id) {
-        getById(id).start();
+    public void start(UUID id) {
+        get(id).start();
     }
 
     @Override
-    public void startByName(String name) {
-        getByName(name).start();
+    public void start(String name) {
+        get(name).start();
     }
 
     @Override
-    public void restartByPid(long pid) throws ApplicationException {
+    public void restart(long pid) throws ApplicationException {
         throw new UnsupportedOperationException("Restart is not support.");
     }
 
     @Override
-    public void restartById(UUID id) {
+    public void restart(UUID id) {
         throw new UnsupportedOperationException("Restart is not support.");
     }
 
     @Override
-    public void restartByName(String name) {
+    public void restart(String name) {
         throw new UnsupportedOperationException("Restart is not support.");
     }
 
     @Override
-    public void stopByPid(long pid) throws ApplicationException {
+    public void stop(long pid) throws ApplicationException {
         throw new UnsupportedOperationException("Stop is not support.");
     }
 
     @Override
-    public void stopById(UUID id) {
+    public void stop(UUID id) {
         throw new UnsupportedOperationException("Stop is not support.");
     }
 
     @Override
-    public void stopByName(String name) {
+    public void stop(String name) {
         throw new UnsupportedOperationException("Stop is not support.");
     }
 
     @Override
-    public void startAllByProfile(String profile) {
+    public void startAll(String profile) {
         var apps = getByProfile(profile);
         for (var app : apps) app.start();
     }

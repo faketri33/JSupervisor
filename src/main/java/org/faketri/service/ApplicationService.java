@@ -16,29 +16,29 @@ public interface ApplicationService {
 
     Collection<Application> getByProfile(String profile);
 
-    Application getById(UUID id) throws ApplicationNotFindException;
+    Application get(UUID id) throws ApplicationNotFindException;
 
-    Application getByName(String name) throws ApplicationNotFindException;
+    Application get(String name) throws ApplicationNotFindException;
 
-    Application getByPid(long pid) throws ApplicationNotFindException;
+    Application get(long pid) throws ApplicationNotFindException;
 
-    void startById(UUID id);
+    void start(UUID id);
 
-    void startByName(String name);
+    void start(String name);
 
-    void restartByPid(long pid) throws ApplicationException;
+    void restart(long pid) throws ApplicationException;
 
-    void restartById(UUID id);
+    void restart(UUID id);
 
-    void restartByName(String name);
+    void restart(String name);
 
-    void stopByPid(long pid) throws ApplicationException;
+    void stop(long pid) throws ApplicationException;
 
-    void stopById(UUID id);
+    void stop(UUID id);
 
-    void stopByName(String name);
+    void stop(String name);
 
-    void startAllByProfile(String profile);
+    void startAll(String profile);
 
     void save(Application app);
 }
