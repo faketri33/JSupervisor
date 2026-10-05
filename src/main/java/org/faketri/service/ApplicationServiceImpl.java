@@ -4,6 +4,7 @@ import org.faketri.domain.Application;
 import org.faketri.domain.repository.ApplicationRepository;
 import org.faketri.infrastructure.exceptions.application.ApplicationException;
 import org.faketri.infrastructure.exceptions.application.ApplicationNotFindException;
+import org.faketri.infrastructure.process.ApplicationProcessContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,8 +17,9 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ApplicationServiceImpl implements ApplicationService {
 
     private static final Logger log = LoggerFactory.getLogger(ApplicationServiceImpl.class);
+
     private final ApplicationRepository applicationRepository;
-    private final Set<Application> activeApp;
+    private final Set<ApplicationProcessContainer> activeApp;
 
     public ApplicationServiceImpl(ApplicationRepository applicationRepository) {
         this.applicationRepository = applicationRepository;
@@ -51,12 +53,18 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     public void start(UUID id) {
-        get(id).start();
+        start(get(id));
     }
 
     @Override
     public void start(String name) {
-        get(name).start();
+        start(get(name));
+    }
+
+    private void start(Application app) {
+        var cont = new ApplicationProcessContainer(app);
+        cont.start();
+        activeApp.add(cont);
     }
 
     @Override
@@ -96,10 +104,9 @@ public class ApplicationServiceImpl implements ApplicationService {
         for (var app : apps) {
             try {
                 log.debug("Start app {}", app.getName());
-                app.start();
-                activeApp.add(app);
+                start(app);
                 notes.add("Application successfully start - " + app.getName());
-            } catch (ApplicationException ex){
+            } catch (ApplicationException ex) {
                 log.error(ex.getMessage());
                 notes.add("Application error - " + app.getName());
             }

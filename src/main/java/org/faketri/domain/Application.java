@@ -1,17 +1,11 @@
 package org.faketri.domain;
 
-import org.faketri.infrastructure.exceptions.application.ApplicationException;
-import org.faketri.infrastructure.exceptions.process.ProcessException;
-import org.faketri.infrastructure.process.ProcessErrorHandler;
-import org.faketri.infrastructure.process.ProcessHandler;
-import org.faketri.infrastructure.process.reader.ProcessReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer;
 
 public class Application {
 
@@ -19,7 +13,6 @@ public class Application {
     private final UUID id;
     private final String name;
 
-    private final ProcessHandler processHandler;
     private final AppConfig configuration;
 
     private final AtomicInteger restartCount = new AtomicInteger(0);
@@ -30,7 +23,6 @@ public class Application {
         this.id = UUID.randomUUID();
         this.name = name;
         this.configuration = configuration;
-        processHandler = new ProcessHandler(configuration.getCommands());
         changeStatus(state);
     }
 
@@ -50,41 +42,8 @@ public class Application {
         return name;
     }
 
-    public long getPid() {
-        return processHandler.pid();
-    }
-
-    public void start() throws ApplicationException {
-        try {
-            processHandler.start();
-            changeStatus(State.RUNNING);
-            subscribe(p -> changeStatus(p.exitValue() != 0 ? State.FAILED : State.FINISHED));
-        } catch (ProcessException ex){
-            log.error(ex.getMessage());
-            throw new ApplicationException(ex.getMessage() + " from app - " + name);
-        }
-    }
-
-    public void listen(ProcessReader pr) {
-        processHandler.listen(pr);
-    }
-
-    public void errHandle(ProcessErrorHandler err) {
-        processHandler.errHandle(err);
-    }
-
-    public void subscribe(Consumer<? super Process> consumer) {
-        processHandler.subscribeOnExit().thenAccept(consumer);
-    }
-
     private void changeStatus(State state) {
         this.state = state;
-
-        // stupid check for test
-        if (!configuration.isRestartable().equals(RestartPolicy.NEVER)
-                && state.equals(State.FAILED)
-                && restartCount.getAndIncrement() < configuration.getMaxRestart())
-            start();
     }
 
     public State getState() {
@@ -93,10 +52,6 @@ public class Application {
 
     public AppConfig getConfiguration() {
         return configuration;
-    }
-
-    public boolean isAlive() {
-        return processHandler.isAlive();
     }
 
     @Override

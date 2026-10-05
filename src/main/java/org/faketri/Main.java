@@ -21,7 +21,7 @@ public class Main {
         try {
             AppInstance.create(Path.of(args[0])).start();
         } catch (IOException ex) {
-            log.debug(ex.getMessage());
+            log.error(ex.getMessage());
         }
     }
 }

@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class AppConfig {
+public final class AppConfig {
 
     private final List<String> commands;
 

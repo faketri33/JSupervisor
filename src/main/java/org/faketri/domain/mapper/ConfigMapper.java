@@ -4,7 +4,7 @@ import org.faketri.domain.AppConfig;
 import org.faketri.domain.Application;
 import org.faketri.infrastructure.parser.ConfigEntry;
 
-public class ConfigMapper {
+public final class ConfigMapper {
     private ConfigMapper() {
     }
 

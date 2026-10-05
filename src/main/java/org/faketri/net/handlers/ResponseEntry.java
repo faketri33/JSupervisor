@@ -5,7 +5,8 @@ import org.faketri.net.io.dto.response.OkResponse;
 import org.faketri.net.io.dto.response.Response;
 
 public final class ResponseEntry {
-    private ResponseEntry() {}
+    private ResponseEntry() {
+    }
 
     public static <R extends Request> CommandHandler<R, Response> ok(VoidHandler<R> h) {
         return req -> {

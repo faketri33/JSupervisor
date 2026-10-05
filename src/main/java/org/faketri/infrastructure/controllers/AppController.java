@@ -6,10 +6,7 @@ import org.faketri.net.io.dto.request.AllRequest;
 import org.faketri.net.io.dto.request.RunRequest;
 import org.faketri.net.io.dto.response.AppInfo;
 import org.faketri.net.io.dto.response.AppsResponse;
-import org.faketri.net.io.dto.response.LogResponse;
-import org.faketri.net.io.dto.response.OkResponse;
 import org.faketri.service.ApplicationService;
-import org.faketri.utils.Constants;
 
 public class AppController {
 

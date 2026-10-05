@@ -23,12 +23,15 @@ public class ProcessHandler {
     private final ProcessBuilder processBuilder;
     private final Set<ProcessReader> inputListeners;
     private final Set<ProcessErrorHandler> processErrorHandler;
+
     private Process process;
+
     private volatile boolean listening = false;
 
     public ProcessHandler(List<String> commands) {
         this.processBuilder = new ProcessBuilder(commands);
         this.processBuilder.redirectErrorStream(true);
+
         this.inputListeners = ConcurrentHashMap.newKeySet();
         this.processErrorHandler = ConcurrentHashMap.newKeySet();
     }
