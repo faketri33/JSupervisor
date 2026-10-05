@@ -1,8 +1,12 @@
 package org.faketri.domain;
 
+import org.faketri.infrastructure.exceptions.application.ApplicationException;
+import org.faketri.infrastructure.exceptions.process.ProcessException;
 import org.faketri.infrastructure.process.ProcessErrorHandler;
 import org.faketri.infrastructure.process.ProcessHandler;
 import org.faketri.infrastructure.process.reader.ProcessReader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.UUID;
@@ -11,6 +15,7 @@ import java.util.function.Consumer;
 
 public class Application {
 
+    private static final Logger log = LoggerFactory.getLogger(Application.class);
     private final UUID id;
     private final String name;
 
@@ -49,10 +54,15 @@ public class Application {
         return processHandler.pid();
     }
 
-    public void start() {
-        processHandler.start();
-        changeStatus(State.RUNNING);
-        subscribe(p -> changeStatus(p.exitValue() != 0 ? State.FAILED : State.FINISHED));
+    public void start() throws ApplicationException {
+        try {
+            processHandler.start();
+            changeStatus(State.RUNNING);
+            subscribe(p -> changeStatus(p.exitValue() != 0 ? State.FAILED : State.FINISHED));
+        } catch (ProcessException ex){
+            log.error(ex.getMessage());
+            throw new ApplicationException(ex.getMessage() + " from app - " + name);
+        }
     }
 
     public void listen(ProcessReader pr) {

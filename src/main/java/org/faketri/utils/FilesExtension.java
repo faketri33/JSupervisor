@@ -1,7 +1,7 @@
 package org.faketri.utils;
 
-public class FilesExtends {
-    private FilesExtends() {
+public final class FilesExtension{
+    private FilesExtension() {
         /* This utility class should not be instantiated */
     }
 

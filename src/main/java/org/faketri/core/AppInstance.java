@@ -10,13 +10,13 @@ import org.faketri.net.ServerChannel;
 import org.faketri.net.ServerFactory;
 import org.faketri.net.handlers.StupidDispatcher;
 import org.faketri.service.ApplicationServiceImpl;
-import org.faketri.utils.FilesExtends;
+import org.faketri.utils.FilesExtension;
 
 import java.io.IOException;
 import java.nio.file.Path;
 
 
-public class AppInstance {
+public final class AppInstance {
 
     private final ServerChannel server;
 
@@ -26,7 +26,7 @@ public class AppInstance {
 
     public static AppInstance create(Path configPath) throws IOException {
         RootConfig config = ParserFactory
-                .of(FilesExtends.getFileExtension(configPath.toString()))
+                .of(FilesExtension.getFileExtension(configPath.toString()))
                 .parse(configPath);
 
         ApplicationRepository repository = new ApplicationInMemoryRepository();

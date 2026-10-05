@@ -4,16 +4,24 @@ import org.faketri.domain.Application;
 import org.faketri.domain.repository.ApplicationRepository;
 import org.faketri.infrastructure.exceptions.application.ApplicationException;
 import org.faketri.infrastructure.exceptions.application.ApplicationNotFindException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ApplicationServiceImpl implements ApplicationService {
 
+    private static final Logger log = LoggerFactory.getLogger(ApplicationServiceImpl.class);
     private final ApplicationRepository applicationRepository;
+    private final Set<Application> activeApp;
 
     public ApplicationServiceImpl(ApplicationRepository applicationRepository) {
         this.applicationRepository = applicationRepository;
+        this.activeApp = ConcurrentHashMap.newKeySet();
     }
 
     @Override
@@ -82,9 +90,21 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     @Override
-    public void startAll(String profile) {
+    public Collection<String> startAll(String profile) {
         var apps = getByProfile(profile);
-        for (var app : apps) app.start();
+        Collection<String> notes = new ArrayList<>();
+        for (var app : apps) {
+            try {
+                log.debug("Start app {}", app.getName());
+                app.start();
+                activeApp.add(app);
+                notes.add("Application successfully start - " + app.getName());
+            } catch (ApplicationException ex){
+                log.error(ex.getMessage());
+                notes.add("Application error - " + app.getName());
+            }
+        }
+        return notes;
     }
 
     @Override

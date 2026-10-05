@@ -38,7 +38,7 @@ public interface ApplicationService {
 
     void stop(String name);
 
-    void startAll(String profile);
+    Collection<String> startAll(String profile);
 
     void save(Application app);
 }

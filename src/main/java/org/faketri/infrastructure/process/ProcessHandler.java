@@ -1,6 +1,8 @@
 package org.faketri.infrastructure.process;
 
+import org.faketri.infrastructure.exceptions.application.ApplicationException;
 import org.faketri.infrastructure.exceptions.process.ProcessAlreadyRunningException;
+import org.faketri.infrastructure.exceptions.process.ProcessException;
 import org.faketri.infrastructure.exceptions.process.ProcessNotFindException;
 import org.faketri.infrastructure.process.reader.ProcessReader;
 import org.slf4j.Logger;
@@ -31,7 +33,7 @@ public class ProcessHandler {
         this.processErrorHandler = ConcurrentHashMap.newKeySet();
     }
 
-    public void start() {
+    public void start() throws ProcessException {
         if (isAlive()) throw new ProcessAlreadyRunningException("Process already running");
 
         try {
@@ -40,6 +42,7 @@ public class ProcessHandler {
             log.debug("commands {}", processBuilder.command());
         } catch (IOException ex) {
             processErrorHandler.forEach(h -> h.handelException(ex));
+            throw new ApplicationException(ex.getMessage());
         }
 
         needToListen();
