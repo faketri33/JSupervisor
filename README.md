@@ -1,12 +1,7 @@
 # JSupervisor
 
 **JSupervisor** — простой менеджер процессов на Java, позволяющий запускать приложения, отслеживать их состояние и получать вывод логов в реальном времени.
-![JSupervisor](assets/output.png)
 
-![macos notify](assets/macos_notify.png)
-![DBUS notify by linux](assets/linux_notify.png)
-
-![Unix domain send message](assets/unixdomain.png)
 ## Возможности
 
 * Запуск и управление процессами.
@@ -22,6 +17,34 @@
 * Группировка процессов по профилям.
 * Настройка политики перезапуска процесса.
 * Отправка системных уведомлений
+
+## Скриншоты
+
+### Консольный вывод
+![JSupervisor](assets/output.png)
+
+### Уведомления
+
+|                  macOS                   |              Linux (D-Bus)               |
+|:----------------------------------------:|:----------------------------------------:|
+| ![macOS notify](assets/macos_notify.png) | ![Linux notify](assets/linux_notify.png) |
+
+### Управление через Unix domain socket
+Команды отправляются в виде JSON, например:
+
+```json
+{"command": "run", "app": "test"}
+```
+
+![Unix domain send message](assets/unixdomain.png)
+
+Для простоты тестирования написан небольшой Python-скрипт `send.py`. 
+В дальнейшем планируется полноценный запуск приложения с аргументами, 
+при котором вся остальная работа останется незаметной для пользователя:
+
+```bash
+jsup run test
+```
 
 ## Конфигурация
 
