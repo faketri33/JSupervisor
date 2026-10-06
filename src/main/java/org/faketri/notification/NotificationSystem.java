@@ -1,7 +1,7 @@
 package org.faketri.notification;
 
 
-import org.faketri.utils.ApplicationProperties;
+import org.faketri.utils.config.ApplicationProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

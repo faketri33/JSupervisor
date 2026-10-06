@@ -1,11 +1,8 @@
 package org.faketri.infrastructure.repository;
 
 import org.faketri.domain.Application;
+import org.faketri.domain.exceptions.application.ApplicationNotFindException;
 import org.faketri.domain.repository.ApplicationRepository;
-import org.faketri.infrastructure.exceptions.application.ApplicationException;
-import org.faketri.infrastructure.exceptions.application.ApplicationNotFindException;
-import org.faketri.infrastructure.process.reader.ConsoleOutputProcessReader;
-import org.faketri.utils.function.CheckedPredicate;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -49,5 +46,10 @@ public class ApplicationInMemoryRepository implements ApplicationRepository {
 
     public void save(Application app) {
         applications.add(app);
+    }
+
+    @Override
+    public void saveAll(Collection<Application> app) {
+        applications.addAll(app);
     }
 }

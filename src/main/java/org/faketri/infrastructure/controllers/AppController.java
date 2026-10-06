@@ -8,7 +8,7 @@ import org.faketri.net.io.dto.response.AppsResponse;
 import org.faketri.service.ApplicationService;
 
 
-public class AppController {
+public class AppController implements Controller {
 
     private final ApplicationService service;
 

@@ -1,6 +1,6 @@
 package org.faketri.net.handlers;
 
-import org.faketri.infrastructure.exceptions.unixserver.ErrorRequest;
+import org.faketri.net.exceptions.request.ErrorRequest;
 import org.faketri.net.io.dto.request.Request;
 import org.faketri.net.io.dto.response.Response;
 

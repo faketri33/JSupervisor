@@ -1,12 +1,13 @@
 package org.faketri.service;
 
 import org.faketri.domain.Application;
+import org.faketri.domain.exceptions.application.ApplicationException;
+import org.faketri.domain.exceptions.application.ApplicationNotFindException;
 import org.faketri.domain.repository.ApplicationRepository;
-import org.faketri.infrastructure.exceptions.application.ApplicationException;
-import org.faketri.infrastructure.exceptions.application.ApplicationNotFindException;
 import org.faketri.infrastructure.process.ApplicationProcessContainer;
-import org.faketri.infrastructure.process.Journal;
+import org.faketri.infrastructure.process.journal.InMemoryJournal;
 import org.faketri.net.io.dto.response.AppInfo;
+import org.faketri.net.io.mapper.AppMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,12 +28,20 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     public Collection<AppInfo> getAll() {
-        return applicationRepository.getAll().stream().map(AppMapper::map).toList();
+        return applicationRepository
+                .getAll()
+                .stream()
+                .map(AppMapper::map)
+                .toList();
     }
 
     @Override
     public Collection<AppInfo> getByProfile(String profile) {
-        return applicationRepository.getByProfile(profile).stream().map(AppMapper::map).toList();
+        return applicationRepository
+                .getByProfile(profile)
+                .stream()
+                .map(AppMapper::map)
+                .toList();
     }
 
     @Override
@@ -49,7 +58,8 @@ public class ApplicationServiceImpl implements ApplicationService {
     public List<AppInfo> getActive() {
         return activeApp
                 .stream()
-                .map(AppMapper::map).toList();
+                .map(AppMapper::map)
+                .toList();
     }
 
     @Override
@@ -73,7 +83,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     private void start(Application app) {
-        var cont = new ApplicationProcessContainer(app, new Journal());
+        var cont = new ApplicationProcessContainer(app, new InMemoryJournal());
         cont.start();
         log.debug("Application start with name {}", app.getName());
         activeApp.add(cont);

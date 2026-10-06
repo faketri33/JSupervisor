@@ -1,7 +1,7 @@
 package org.faketri.net.socket;
 
 import com.sun.security.auth.module.UnixSystem;
-import org.faketri.utils.Constants;
+import org.faketri.utils.config.Constants;
 
 import java.io.IOException;
 import java.net.UnixDomainSocketAddress;

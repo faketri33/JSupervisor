@@ -1,19 +1,18 @@
 package org.faketri.core;
 
-import org.faketri.domain.mapper.ConfigMapper;
+import org.faketri.domain.Application;
 import org.faketri.domain.repository.ApplicationRepository;
+import org.faketri.infrastructure.configuration.ConfigurationReaderFactory;
 import org.faketri.infrastructure.controllers.AppController;
-import org.faketri.infrastructure.parser.ParserFactory;
-import org.faketri.infrastructure.parser.RootConfig;
 import org.faketri.infrastructure.repository.ApplicationInMemoryRepository;
 import org.faketri.net.ServerChannel;
 import org.faketri.net.ServerFactory;
 import org.faketri.net.handlers.StupidDispatcher;
 import org.faketri.service.ApplicationServiceImpl;
-import org.faketri.utils.FilesExtension;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Collection;
 
 
 public final class AppInstance {
@@ -25,13 +24,12 @@ public final class AppInstance {
     }
 
     public static AppInstance create(Path configPath) throws IOException {
-        RootConfig config = ParserFactory
-                .of(FilesExtension.getFileExtension(configPath.toString()))
-                .parse(configPath);
+        Collection<Application> apps = ConfigurationReaderFactory
+                .getInstance(configPath)
+                .read();
 
         ApplicationRepository repository = new ApplicationInMemoryRepository();
-        config.getApp().forEach((name, app) ->
-                repository.save(ConfigMapper.toDto(name, app)));
+        repository.saveAll(apps);
 
         var controller = new AppController(new ApplicationServiceImpl(repository));
 

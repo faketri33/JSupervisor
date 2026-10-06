@@ -2,23 +2,23 @@ package org.faketri.infrastructure.process;
 
 import org.faketri.domain.Application;
 import org.faketri.domain.State;
-import org.faketri.infrastructure.exceptions.application.ApplicationException;
+import org.faketri.domain.exceptions.application.ApplicationException;
+import org.faketri.infrastructure.process.journal.Journal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.List;
+import java.util.Collection;
 
 public final class ApplicationProcessContainer {
 
     private static final Logger log = LoggerFactory.getLogger(ApplicationProcessContainer.class);
 
     private final Application application;
-    private Process process;
-
     private final Journal journal;
+    private Process process;
 
     public ApplicationProcessContainer(Application application, Journal journal) {
         this.application = application;
@@ -30,7 +30,6 @@ public final class ApplicationProcessContainer {
 
         try {
             journal.clear();
-            journal.write("Starting process");
 
             processBuilder.environment().putAll(System.getenv());
 
@@ -58,7 +57,7 @@ public final class ApplicationProcessContainer {
         }
     }
 
-    private void processListen(){
+    private void processListen() {
         try (var buffer = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
             String line;
             while ((line = buffer.readLine()) != null) journal.write(line);
@@ -82,7 +81,7 @@ public final class ApplicationProcessContainer {
         return application;
     }
 
-    public List<String> journal(){
-        return journal.getJournal();
+    public Collection<String> journal() {
+        return journal.log();
     }
 }

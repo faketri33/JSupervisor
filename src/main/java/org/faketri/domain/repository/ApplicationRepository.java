@@ -16,4 +16,6 @@ public interface ApplicationRepository extends Repository<Application, UUID> {
     Application get(String name);
 
     void save(Application app);
+
+    void saveAll(Collection<Application> app);
 }

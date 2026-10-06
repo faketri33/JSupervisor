@@ -1,7 +1,7 @@
 package org.faketri.net.socket.mapper;
 
-import org.faketri.infrastructure.exceptions.unixserver.ErrorRequest;
 import org.faketri.net.EStatusCode;
+import org.faketri.net.exceptions.request.ErrorRequest;
 import org.faketri.net.io.dto.response.ErrorResponse;
 import org.faketri.net.io.dto.response.Response;
 import org.slf4j.Logger;

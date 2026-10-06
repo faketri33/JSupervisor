@@ -1,12 +1,12 @@
 package org.faketri.net.io.dto;
 
-import org.faketri.utils.Constants;
+import org.faketri.utils.config.Constants;
 
 import java.net.ProtocolException;
 import java.nio.ByteBuffer;
 
-import static org.faketri.utils.Constants.HeaderConfiguration.MAGIC;
-import static org.faketri.utils.Constants.HeaderConfiguration.MIN_SIZE;
+import static org.faketri.utils.config.Constants.HeaderConfiguration.MAGIC;
+import static org.faketri.utils.config.Constants.HeaderConfiguration.MIN_SIZE;
 
 public record Header(int version, int headerSize, int payloadSize) {
 
