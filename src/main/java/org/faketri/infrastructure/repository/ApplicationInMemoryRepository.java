@@ -46,17 +46,8 @@ public class ApplicationInMemoryRepository implements ApplicationRepository {
                 .orElseThrow(() -> new ApplicationNotFindException("Cannot find application with name - " + name));
     }
 
-    public Application get(long pid) throws ApplicationException {
-        return applications.stream()
-                // skip not started process from list, because he doesn't have pid
-                .filter(CheckedPredicate.unchecked(a -> a.getPid() == pid))
-                .findFirst()
-                .orElseThrow(() -> new ApplicationNotFindException("Cannot find application with process pid " + pid));
-    }
 
     public void save(Application app) {
-        // debug out for process
-        app.listen(new ConsoleOutputProcessReader(System.out));
         applications.add(app);
     }
 }

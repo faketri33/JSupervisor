@@ -5,13 +5,12 @@ import org.faketri.domain.repository.ApplicationRepository;
 import org.faketri.infrastructure.exceptions.application.ApplicationException;
 import org.faketri.infrastructure.exceptions.application.ApplicationNotFindException;
 import org.faketri.infrastructure.process.ApplicationProcessContainer;
+import org.faketri.infrastructure.process.Journal;
+import org.faketri.net.io.dto.response.AppInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ApplicationServiceImpl implements ApplicationService {
@@ -27,43 +26,56 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     @Override
-    public Collection<Application> getAll() {
-        return applicationRepository.getAll();
+    public Collection<AppInfo> getAll() {
+        return applicationRepository.getAll().stream().map(AppMapper::map).toList();
     }
 
     @Override
-    public Collection<Application> getByProfile(String profile) {
-        return applicationRepository.getByProfile(profile);
+    public Collection<AppInfo> getByProfile(String profile) {
+        return applicationRepository.getByProfile(profile).stream().map(AppMapper::map).toList();
     }
 
     @Override
-    public Application get(UUID id) throws ApplicationNotFindException {
-        return applicationRepository.get(id);
+    public AppInfo get(UUID id) throws ApplicationNotFindException {
+        return AppMapper.map(applicationRepository.get(id));
     }
 
     @Override
-    public Application get(String name) throws ApplicationNotFindException {
-        return applicationRepository.get(name);
+    public AppInfo get(String name) throws ApplicationNotFindException {
+        return AppMapper.map(applicationRepository.get(name));
     }
 
     @Override
-    public Application get(long pid) throws ApplicationNotFindException {
-        return applicationRepository.get(pid);
+    public List<AppInfo> getActive() {
+        return activeApp
+                .stream()
+                .map(AppMapper::map).toList();
+    }
+
+    @Override
+    public AppInfo get(long pid) throws ApplicationNotFindException {
+        AppInfo res = new AppInfo("", "", -1, List.of(), List.of());
+        for (var app : activeApp)
+            if (app.getProcess().pid() == pid) return AppMapper.map(app);
+
+        return res;
     }
 
     @Override
     public void start(UUID id) {
-        start(get(id));
+        start(applicationRepository.get(id));
     }
 
     @Override
     public void start(String name) {
-        start(get(name));
+        log.debug("App request to start with name {}", name);
+        start(applicationRepository.get(name));
     }
 
     private void start(Application app) {
-        var cont = new ApplicationProcessContainer(app);
+        var cont = new ApplicationProcessContainer(app, new Journal());
         cont.start();
+        log.debug("Application start with name {}", app.getName());
         activeApp.add(cont);
     }
 
@@ -99,7 +111,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     public Collection<String> startAll(String profile) {
-        var apps = getByProfile(profile);
+        var apps = applicationRepository.getByProfile(profile);
         Collection<String> notes = new ArrayList<>();
         for (var app : apps) {
             try {

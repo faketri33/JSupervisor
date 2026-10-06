@@ -1,37 +1,30 @@
 package org.faketri.domain;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class Application {
 
-    private static final Logger log = LoggerFactory.getLogger(Application.class);
     private final UUID id;
     private final String name;
 
     private final AppConfig configuration;
 
-    private final AtomicInteger restartCount = new AtomicInteger(0);
-
     private State state;
 
-    private Application(String name, AppConfig configuration, State state) {
+    private Application(String name, AppConfig configuration) {
         this.id = UUID.randomUUID();
         this.name = name;
         this.configuration = configuration;
-        changeStatus(state);
+        this.state = State.PENDING;
     }
 
     public static Application of(String name, List<String> commands) {
-        return new Application(name, new AppConfig.Builder().commands(commands).build(), State.PENDING);
+        return new Application(name, new AppConfig.Builder().commands(commands).build());
     }
 
     public static Application of(String name, AppConfig conf) {
-        return new Application(name, conf, State.PENDING);
+        return new Application(name, conf);
     }
 
     public UUID getAppId() {
@@ -42,7 +35,7 @@ public class Application {
         return name;
     }
 
-    private void changeStatus(State state) {
+    public void setState(State state){
         this.state = state;
     }
 

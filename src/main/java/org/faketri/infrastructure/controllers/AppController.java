@@ -4,9 +4,9 @@ import org.faketri.net.RequestDispatcherCommand;
 import org.faketri.net.handlers.ResponseEntry;
 import org.faketri.net.io.dto.request.AllRequest;
 import org.faketri.net.io.dto.request.RunRequest;
-import org.faketri.net.io.dto.response.AppInfo;
 import org.faketri.net.io.dto.response.AppsResponse;
 import org.faketri.service.ApplicationService;
+
 
 public class AppController {
 
@@ -17,10 +17,7 @@ public class AppController {
     }
 
     public AppsResponse getAll(AllRequest request) {
-        return new AppsResponse(service.getAll()
-                .stream()
-                .map(a -> new AppInfo(a.getName(), a.getAppId().toString(), -1, a.getConfiguration().getCommands()))
-                .toList());
+        return new AppsResponse(service.getActive());
     }
 
     public void run(RunRequest request) {

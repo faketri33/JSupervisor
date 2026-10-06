@@ -1,6 +1,7 @@
 package org.faketri.infrastructure.process;
 
 import org.faketri.domain.Application;
+import org.faketri.domain.State;
 import org.faketri.infrastructure.exceptions.application.ApplicationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,8 +9,7 @@ import org.slf4j.LoggerFactory;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.List;
 
 public final class ApplicationProcessContainer {
 
@@ -18,11 +18,11 @@ public final class ApplicationProcessContainer {
     private final Application application;
     private Process process;
 
-    private final Set<String> journal;
+    private final Journal journal;
 
-    public ApplicationProcessContainer(Application application) {
+    public ApplicationProcessContainer(Application application, Journal journal) {
         this.application = application;
-        this.journal = ConcurrentHashMap.newKeySet();
+        this.journal = journal;
     }
 
     public void start() throws ApplicationException {
@@ -30,18 +30,30 @@ public final class ApplicationProcessContainer {
 
         try {
             journal.clear();
+            journal.write("Starting process");
 
             processBuilder.environment().putAll(System.getenv());
 
             process = processBuilder
                     .command(application.getConfiguration().getCommands())
                     .start();
+            application.setState(State.RUNNING);
 
-            journal.add("Starting process");
+            process.onExit().thenAccept(p -> {
+                if (p.exitValue() == 0) {
+                    journal.write("Process finished");
+                    application.setState(State.FINISHED);
+                } else {
+                    journal.write("Process failed");
+                    application.setState(State.FAILED);
+                }
+            });
+
             processListen();
         } catch (IOException e) {
-            journal.add("Can't start process");
+            journal.write("Can't start process, " + e.getMessage());
             log.error("Can't start process", e);
+            application.setState(State.FAILED);
             throw new ApplicationException(e.getMessage());
         }
     }
@@ -49,19 +61,28 @@ public final class ApplicationProcessContainer {
     private void processListen(){
         try (var buffer = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
             String line;
-            while ((line = buffer.readLine()) != null) writeJournal(line);
+            while ((line = buffer.readLine()) != null) journal.write(line);
         } catch (IOException e) {
-            writeJournal(e.getMessage());
+            journal.write(e.getMessage());
             throw new RuntimeException(e);
         }
     }
 
-    private void writeJournal(String journal) {
-        this.journal.add(journal);
+    public void stop() {
+        journal.write("Stopping process");
+        process.destroy();
+        application.setState(State.FINISHED);
     }
 
-    public void stop() {
-        journal.add("Stopping process");
-        process.destroy();
+    public Process getProcess() {
+        return process;
+    }
+
+    public Application getApplication() {
+        return application;
+    }
+
+    public List<String> journal(){
+        return journal.getJournal();
     }
 }

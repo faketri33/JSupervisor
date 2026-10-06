@@ -3,8 +3,11 @@ package org.faketri.service;
 import org.faketri.domain.Application;
 import org.faketri.infrastructure.exceptions.application.ApplicationException;
 import org.faketri.infrastructure.exceptions.application.ApplicationNotFindException;
+import org.faketri.infrastructure.process.ApplicationProcessContainer;
+import org.faketri.net.io.dto.response.AppInfo;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
 
 
@@ -12,15 +15,17 @@ import java.util.UUID;
 //  (owning the business logic) instead of merely delegating calls to the repository.
 public interface ApplicationService {
 
-    Collection<Application> getAll();
+    Collection<AppInfo> getAll();
 
-    Collection<Application> getByProfile(String profile);
+    Collection<AppInfo> getByProfile(String profile);
 
-    Application get(UUID id) throws ApplicationNotFindException;
+    AppInfo get(UUID id) throws ApplicationNotFindException;
 
-    Application get(String name) throws ApplicationNotFindException;
+    AppInfo get(String name) throws ApplicationNotFindException;
 
-    Application get(long pid) throws ApplicationNotFindException;
+    List<AppInfo> getActive();
+
+    AppInfo get(long pid) throws ApplicationNotFindException;
 
     void start(UUID id);
 

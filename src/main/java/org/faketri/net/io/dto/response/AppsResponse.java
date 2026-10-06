@@ -1,9 +1,9 @@
 package org.faketri.net.io.dto.response;
 
-import java.util.List;
+import java.util.Collection;
 
-public record AppsResponse(String status, List<AppInfo> apps) implements Response {
-    public AppsResponse(List<AppInfo> apps) {
+public record AppsResponse(String status, Collection<AppInfo> apps) implements Response {
+    public AppsResponse(Collection<AppInfo> apps) {
         this("ok", apps);
     }
 }

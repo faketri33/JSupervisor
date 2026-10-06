@@ -15,7 +15,5 @@ public interface ApplicationRepository extends Repository<Application, UUID> {
 
     Application get(String name);
 
-    Application get(long pid);
-
     void save(Application app);
 }
