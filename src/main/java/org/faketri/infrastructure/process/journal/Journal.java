@@ -45,4 +45,6 @@ public interface Journal {
      * @return recorded process output
      */
     Collection<String> log();
+
+    String toString();
 }

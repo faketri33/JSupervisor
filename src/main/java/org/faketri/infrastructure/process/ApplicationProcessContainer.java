@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 
 public final class ApplicationProcessContainer {
@@ -18,7 +19,10 @@ public final class ApplicationProcessContainer {
 
     private final Application application;
     private final Journal journal;
-    private Process process;
+
+    private volatile Process process;
+    private volatile State state = State.PENDING;
+    private volatile boolean stopRequested;
 
     public ApplicationProcessContainer(Application application, Journal journal) {
         this.application = application;
@@ -26,62 +30,77 @@ public final class ApplicationProcessContainer {
     }
 
     public void start() throws ApplicationException {
-        ProcessBuilder processBuilder = new ProcessBuilder();
-
         try {
             journal.clear();
 
-            processBuilder.environment().putAll(System.getenv());
-
-            process = processBuilder
-                    .command(application.getConfiguration().getCommands())
+            process = new ProcessBuilder(application.getConfiguration().getCommands())
+                    .redirectErrorStream(true)
                     .start();
-            application.setState(State.RUNNING);
 
-            process.onExit().thenAccept(p -> {
-                if (p.exitValue() == 0) {
-                    journal.write("Process finished");
-                    application.setState(State.FINISHED);
-                } else {
-                    journal.write("Process failed");
-                    application.setState(State.FAILED);
-                }
-            });
+            state = State.RUNNING;
 
-            processListen();
+            Thread.ofVirtual()
+                    .name("journal-" + application.getName())
+                    .start(this::watch);
+
         } catch (IOException e) {
             journal.write("Can't start process, " + e.getMessage());
             log.error("Can't start process", e);
-            application.setState(State.FAILED);
+            state = State.FAILED;
             throw new ApplicationException(e.getMessage());
         }
     }
 
-    private void processListen() {
-        try (var buffer = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+    private void watch() {
+        try (var reader = new BufferedReader(
+                new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8))) {
             String line;
-            while ((line = buffer.readLine()) != null) journal.write(line);
+            while ((line = reader.readLine()) != null) journal.write(line);
         } catch (IOException e) {
-            journal.write(e.getMessage());
-            throw new RuntimeException(e);
+            journal.write("Read error: " + e.getMessage());
+            log.error("Can't read process output", e);
+        }
+
+        try {
+            int code = process.waitFor();
+            if (stopRequested || code == 0) {
+                journal.write("Process finished");
+                state = State.FINISHED;
+            } else {
+                journal.write("Process failed, exit code " + code);
+                state = State.FAILED;
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
         }
     }
 
     public void stop() {
+        if (!isAlive()) return;
         journal.write("Stopping process");
+        stopRequested = true;
         process.destroy();
-        application.setState(State.FINISHED);
     }
 
-    public Process getProcess() {
-        return process;
+    public boolean isAlive() {
+        var p = process;
+        return p != null && p.isAlive();
     }
 
-    public Application getApplication() {
+    public Long pid() {
+        var p = process;
+        return p == null ? null : p.pid();
+    }
+
+    public Application application() {
         return application;
     }
 
-    public Collection<String> journal() {
+    public Collection<String> log() {
         return journal.log();
+    }
+
+    public State getState() {
+        return state;
     }
 }

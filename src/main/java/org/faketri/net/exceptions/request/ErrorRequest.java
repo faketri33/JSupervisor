@@ -11,7 +11,7 @@ public class ErrorRequest extends RuntimeException {
         this.code = code;
     }
 
-    public String getCode() {
-        return code.name();
+    public EStatusCode getCode() {
+        return code;
     }
 }

@@ -10,13 +10,10 @@ public class Application {
 
     private final AppConfig configuration;
 
-    private State state;
-
     private Application(String name, AppConfig configuration) {
         this.id = UUID.randomUUID();
         this.name = name;
         this.configuration = configuration;
-        this.state = State.PENDING;
     }
 
     public static Application of(String name, List<String> commands) {
@@ -33,14 +30,6 @@ public class Application {
 
     public String getName() {
         return name;
-    }
-
-    public State getState() {
-        return state;
-    }
-
-    public void setState(State state) {
-        this.state = state;
     }
 
     public AppConfig getConfiguration() {

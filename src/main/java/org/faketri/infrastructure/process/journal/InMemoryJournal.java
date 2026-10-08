@@ -44,4 +44,10 @@ public class InMemoryJournal implements Journal {
         lines.clear();
     }
 
+    @Override
+    public String toString() {
+        return "InMemoryJournal{" +
+                "lines=" + lines +
+                '}';
+    }
 }

@@ -7,7 +7,7 @@ import org.faketri.net.io.FrameReader;
 import org.faketri.net.io.FrameWriter;
 import org.faketri.net.io.dto.Frame;
 import org.faketri.net.io.dto.request.Request;
-import org.faketri.net.io.dto.response.Response;
+import org.faketri.net.io.dto.response.ResponseEntry;
 import org.faketri.net.io.json.JsonObjectMapper;
 import org.faketri.net.socket.mapper.RequestExceptionMapper;
 import org.slf4j.Logger;
@@ -30,7 +30,7 @@ public final class UnixSocketConnectionHandler implements ConnectionHandler {
     @Override
     public void handle(SocketChannel channel) {
         try (channel) {
-            Response response = safeProcessRequest(FrameReader.read(channel));
+            ResponseEntry<?> response = safeProcessRequest(FrameReader.read(channel));
             FrameWriter.write(channel, parser.encode(response));
             log.debug("{}", response);
         } catch (IOException ig) {
@@ -38,8 +38,8 @@ public final class UnixSocketConnectionHandler implements ConnectionHandler {
         }
     }
 
-    private Response safeProcessRequest(Frame frame) {
-        Response response;
+    private ResponseEntry<?> safeProcessRequest(Frame frame) {
+        ResponseEntry<?> response;
         try {
             Request request = parser.decode(frame.payload().array(), Request.class);
             response = dispatch.dispatch(request);

@@ -1,13 +1,13 @@
 package org.faketri.service;
 
 import org.faketri.domain.Application;
+import org.faketri.domain.dto.ApplicationView;
+import org.faketri.domain.dto.mapper.ApplicationMapper;
 import org.faketri.domain.exceptions.application.ApplicationException;
 import org.faketri.domain.exceptions.application.ApplicationNotFindException;
 import org.faketri.domain.repository.ApplicationRepository;
 import org.faketri.infrastructure.process.ApplicationProcessContainer;
 import org.faketri.infrastructure.process.journal.InMemoryJournal;
-import org.faketri.net.io.dto.response.AppInfo;
-import org.faketri.net.io.mapper.AppMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,48 +27,45 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     @Override
-    public Collection<AppInfo> getAll() {
+    public Collection<ApplicationView> getAll() {
         return applicationRepository
                 .getAll()
                 .stream()
-                .map(AppMapper::map)
+                .map(ApplicationMapper::toDto)
                 .toList();
     }
 
     @Override
-    public Collection<AppInfo> getByProfile(String profile) {
+    public Collection<ApplicationView> getByProfile(String profile) {
         return applicationRepository
                 .getByProfile(profile)
                 .stream()
-                .map(AppMapper::map)
+                .map(ApplicationMapper::toDto)
                 .toList();
     }
 
     @Override
-    public AppInfo get(UUID id) throws ApplicationNotFindException {
-        return AppMapper.map(applicationRepository.get(id));
+    public ApplicationView get(UUID id) throws ApplicationNotFindException {
+        return ApplicationMapper.toDto(applicationRepository.get(id));
     }
 
     @Override
-    public AppInfo get(String name) throws ApplicationNotFindException {
-        return AppMapper.map(applicationRepository.get(name));
+    public ApplicationView get(String name) throws ApplicationNotFindException {
+        return ApplicationMapper.toDto(applicationRepository.get(name));
     }
 
     @Override
-    public List<AppInfo> getActive() {
-        return activeApp
-                .stream()
-                .map(AppMapper::map)
-                .toList();
+    public List<ApplicationView> getActive() {
+        return activeApp.stream().map(ApplicationMapper::toDto).toList();
     }
 
     @Override
-    public AppInfo get(long pid) throws ApplicationNotFindException {
-        AppInfo res = new AppInfo("", "", -1, List.of(), List.of());
-        for (var app : activeApp)
-            if (app.getProcess().pid() == pid) return AppMapper.map(app);
-
-        return res;
+    public ApplicationView get(long pid) throws ApplicationNotFindException {
+        for (var c : activeApp) {
+            Long p = c.pid();
+            if (p != null && p == pid) return ApplicationMapper.toDto(c);
+        }
+        throw new ApplicationNotFindException("pid " + pid);
     }
 
     @Override

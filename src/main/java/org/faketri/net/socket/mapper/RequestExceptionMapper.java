@@ -1,9 +1,7 @@
 package org.faketri.net.socket.mapper;
 
-import org.faketri.net.EStatusCode;
 import org.faketri.net.exceptions.request.ErrorRequest;
-import org.faketri.net.io.dto.response.ErrorResponse;
-import org.faketri.net.io.dto.response.Response;
+import org.faketri.net.io.dto.response.ResponseEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,13 +13,13 @@ public class RequestExceptionMapper {
     }
 
 
-    public static <T extends ErrorRequest> Response map(T ex) {
+    public static <T extends ErrorRequest> ResponseEntry<?> map(T ex) {
         log.error(ex.toString());
-        return new ErrorResponse(ex.getCode(), ex.getMessage());
+        return ResponseEntry.builder().code(ex.getCode()).body(ex.getMessage()).build();
     }
 
-    public static Response map(Exception ex) {
+    public static ResponseEntry<?> map(Exception ex) {
         log.error(ex.getMessage(), ex);
-        return new ErrorResponse(EStatusCode.INTERNAL.name(), ex.getMessage());
+        return ResponseEntry.internal(ex.getMessage());
     }
 }

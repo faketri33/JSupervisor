@@ -1,11 +1,12 @@
 package org.faketri.infrastructure.controllers;
 
+import org.faketri.domain.dto.ApplicationView;
 import org.faketri.net.RequestDispatcherCommand;
-import org.faketri.net.handlers.ResponseEntry;
-import org.faketri.net.io.dto.request.AllRequest;
-import org.faketri.net.io.dto.request.RunRequest;
-import org.faketri.net.io.dto.response.AppsResponse;
+import org.faketri.net.io.dto.request.Request;
+import org.faketri.net.io.dto.response.ResponseEntry;
 import org.faketri.service.ApplicationService;
+
+import java.util.Collection;
 
 
 public class AppController implements Controller {
@@ -16,16 +17,25 @@ public class AppController implements Controller {
         this.service = service;
     }
 
-    public AppsResponse getAll(AllRequest request) {
-        return new AppsResponse(service.getActive());
+    public ResponseEntry<Collection<ApplicationView>> getAll(Request request) {
+        return ResponseEntry.ok(service.getAll());
     }
 
-    public void run(RunRequest request) {
-        service.start(request.app());
+    public ResponseEntry<Collection<ApplicationView>> getAllActive(Request req) {
+        return ResponseEntry.ok(service.getActive());
+    }
+
+    public void run(Request request) {
+        if (request.args().length == 0) return;
+        service.start(request.args()[0]);
     }
 
     public void registerTo(RequestDispatcherCommand dispatcherCommand) {
-        dispatcherCommand.registerNewDispatch(AllRequest.class, this::getAll);
-        dispatcherCommand.registerNewDispatch(RunRequest.class, ResponseEntry.ok(this::run));
+        dispatcherCommand.registerNewDispatch("all", this::getAll);
+        dispatcherCommand.registerNewDispatch("allActive", this::getAllActive);
+        dispatcherCommand.registerNewDispatch("run", req -> {
+            this.run(req);
+            return ResponseEntry.ok();
+        });
     }
 }
