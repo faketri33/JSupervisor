@@ -25,6 +25,7 @@ public final class SearchApplicationController implements Controller {
 
         Predicate<ApplicationRuntime> filter = RuntimeFilters.parse(args.values("filter"));
         boolean statusGiven = args.values("filter").stream().anyMatch(f -> f.startsWith("status="));
+
         if (!args.flag("a", "all") && !statusGiven) {
             filter = filter.and(ApplicationRuntime::isAlive);
         }

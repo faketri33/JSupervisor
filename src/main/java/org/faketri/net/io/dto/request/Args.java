@@ -23,9 +23,8 @@ public final class Args {
                 String body = a.substring(2);
                 int eq = body.indexOf('=');
                 String key = eq < 0 ? body : body.substring(0, eq);
-                String[] parts = key.split(" ");
 
-                if (VALUE_OPTIONS.contains(parts[0])) {
+                if (VALUE_OPTIONS.contains(key)) {
                     String value;
                     if (eq >= 0) {
                         value = body.substring(eq + 1);
@@ -34,7 +33,7 @@ public final class Args {
                     } else {
                         throw new IllegalArgumentException("Option --" + key + " requires a value");
                     }
-                    options.computeIfAbsent(parts[0], k -> new ArrayList<>()).add(parts[1] + "=" + value);
+                    options.computeIfAbsent(key, k -> new ArrayList<>()).add(value);
                 } else {
                     flags.add(key);
                 }
