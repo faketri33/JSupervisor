@@ -18,8 +18,7 @@ public final class StupidDispatcher implements RequestDispatcherCommand {
         var h = routes.get(req.command());
 
         try {
-            if (h == null) throw new BadRequestException("UNKNOWN COMMAND " + req.getClass().getSimpleName());
-
+            if (h == null) throw new BadRequestException("UNKNOWN COMMAND " + req.command());
             return h.handle(req);
         } catch (ErrorRequest e) {
             return RequestExceptionMapper.map(e);
@@ -29,9 +28,10 @@ public final class StupidDispatcher implements RequestDispatcherCommand {
     }
 
     @Override
-    public void registerNewDispatch(String path, CommandHandler handler) {
-        if (path == null || path.isBlank()) throw new NullPointerException();
+    public void registerNewDispatch(String mainCommand, CommandHandler handler) {
+        Objects.requireNonNull(mainCommand);
         Objects.requireNonNull(handler);
-        this.routes.put(path, handler);
+        if (mainCommand.isBlank()) throw new UnsupportedOperationException("Command address cannot be empty");
+        this.routes.put(mainCommand, handler);
     }
 }

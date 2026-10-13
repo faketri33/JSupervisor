@@ -9,11 +9,13 @@ public class Application {
     private final String name;
 
     private final AppConfig configuration;
+    private volatile State state;
 
     private Application(String name, AppConfig configuration) {
         this.id = UUID.randomUUID();
         this.name = name;
         this.configuration = configuration;
+        this.state = State.PENDING;
     }
 
     public static Application of(String name, List<String> commands) {
@@ -36,6 +38,14 @@ public class Application {
         return configuration;
     }
 
+    public synchronized State getState() {
+        return state;
+    }
+
+    public synchronized void setState(State state) {
+        this.state = state;
+    }
+
     @Override
     public final boolean equals(Object o) {
         if (!(o instanceof Application that)) return false;
@@ -49,5 +59,14 @@ public class Application {
         result = 31 * result + name.hashCode();
         result = 31 * result + configuration.hashCode();
         return result;
+    }
+
+    @Override
+    public String toString() {
+        return "Application{" +
+                "name='" + name + '\'' +
+                ", id=" + id +
+                ", state=" + state +
+                '}';
     }
 }

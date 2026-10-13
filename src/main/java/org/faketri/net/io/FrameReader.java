@@ -15,7 +15,7 @@ public class FrameReader {
         /* This utility class should not be instantiated */
     }
 
-    static void readFully(ReadableByteChannel channel, ByteBuffer bf) throws IOException {
+    private static void readFully(ReadableByteChannel channel, ByteBuffer bf) throws IOException {
         while (bf.hasRemaining()) if (channel.read(bf) < 0) throw new EOFException();
     }
 

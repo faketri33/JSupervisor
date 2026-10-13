@@ -14,11 +14,11 @@ public class RequestExceptionMapper {
 
 
     public static <T extends ErrorRequest> ResponseEntry<?> map(T ex) {
-        log.error(ex.toString());
+        log.error(ex.getMessage());
         return ResponseEntry.builder().code(ex.getCode()).body(ex.getMessage()).build();
     }
 
-    public static ResponseEntry<?> map(Exception ex) {
+    public static ResponseEntry<String> map(Exception ex) {
         log.error(ex.getMessage(), ex);
         return ResponseEntry.internal(ex.getMessage());
     }

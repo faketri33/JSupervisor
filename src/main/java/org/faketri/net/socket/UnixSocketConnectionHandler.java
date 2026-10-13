@@ -14,10 +14,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.util.Objects;
 
-public final class UnixSocketConnectionHandler implements ConnectionHandler {
+final class UnixSocketConnectionHandler implements ConnectionHandler {
     private static final Logger log = LoggerFactory.getLogger(UnixSocketConnectionHandler.class);
 
     private static final JsonObjectMapper parser = new JsonObjectMapper();
@@ -27,28 +28,44 @@ public final class UnixSocketConnectionHandler implements ConnectionHandler {
         this.dispatch = Objects.requireNonNull(dispatch);
     }
 
+    private static byte[] bytes(ByteBuffer buf) {
+        ByteBuffer d = buf.duplicate();
+        byte[] out = new byte[d.remaining()];
+        d.get(out);
+        return out;
+    }
+
     @Override
     public void handle(SocketChannel channel) {
         try (channel) {
-            ResponseEntry<?> response = safeProcessRequest(FrameReader.read(channel));
-            FrameWriter.write(channel, parser.encode(response));
+            ResponseEntry<?> response = process(channel);
+            FrameWriter.write(channel, encodeSafely(response));
             log.debug("{}", response);
-        } catch (IOException ig) {
-            log.error(ig.getMessage());
+        } catch (IOException e) {
+            log.warn("Connection failed", e);
         }
     }
 
-    private ResponseEntry<?> safeProcessRequest(Frame frame) {
-        ResponseEntry<?> response;
+    private ResponseEntry<?> process(SocketChannel channel) {
         try {
-            Request request = parser.decode(frame.payload().array(), Request.class);
-            response = dispatch.dispatch(request);
+            Frame frame = FrameReader.read(channel);
+            Request request = parser.decode(bytes(frame.payload()), Request.class);
+            log.debug(String.valueOf(request));
+            return dispatch.dispatch(request);
         } catch (ErrorRequest e) {
-            response = RequestExceptionMapper.map(e);
+            return RequestExceptionMapper.map(e);
         } catch (Exception e) {
-            response = RequestExceptionMapper.map(e);
+            log.error("Unexpected error while processing request", e);
+            return RequestExceptionMapper.map(e);
         }
+    }
 
-        return response;
+    private byte[] encodeSafely(ResponseEntry<?> response) {
+        try {
+            return parser.encode(response);
+        } catch (RuntimeException e) {
+            log.error("Failed to encode response", e);
+            return parser.encode(RequestExceptionMapper.map(e));
+        }
     }
 }

@@ -2,6 +2,7 @@ package org.faketri.infrastructure.process;
 
 import org.faketri.domain.Application;
 import org.faketri.domain.State;
+import org.faketri.domain.dto.AppSnapshot;
 import org.faketri.domain.exceptions.application.ApplicationException;
 import org.faketri.infrastructure.process.journal.Journal;
 import org.slf4j.Logger;
@@ -12,63 +13,65 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
+import java.util.UUID;
 
-public final class ApplicationProcessContainer {
+public final class ApplicationRuntime {
 
-    private static final Logger log = LoggerFactory.getLogger(ApplicationProcessContainer.class);
+    private static final Logger log = LoggerFactory.getLogger(ApplicationRuntime.class);
 
     private final Application application;
     private final Journal journal;
 
     private volatile Process process;
-    private volatile State state = State.PENDING;
     private volatile boolean stopRequested;
 
-    public ApplicationProcessContainer(Application application, Journal journal) {
+    public ApplicationRuntime(Application application, Journal journal) {
         this.application = application;
         this.journal = journal;
     }
 
-    public void start() throws ApplicationException {
+    public synchronized void start() {
+        if (isAlive()) throw new ApplicationException("Already running");
         try {
             journal.clear();
+            stopRequested = false;
 
-            process = new ProcessBuilder(application.getConfiguration().getCommands())
+            Process p = new ProcessBuilder(application.getConfiguration().getCommands())
                     .redirectErrorStream(true)
                     .start();
+            process = p;
+            application.setState(State.RUNNING);
 
-            state = State.RUNNING;
-
-            Thread.ofVirtual()
+            Thread.ofPlatform()
                     .name("journal-" + application.getName())
-                    .start(this::watch);
+                    .daemon(true)
+                    .start(() -> watch(p));
 
         } catch (IOException e) {
             journal.write("Can't start process, " + e.getMessage());
             log.error("Can't start process", e);
-            state = State.FAILED;
+            application.setState(State.FAILED);
             throw new ApplicationException(e.getMessage());
         }
     }
 
-    private void watch() {
-        try (var reader = new BufferedReader(
-                new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8))) {
+    private synchronized void watch(Process p) {
+        try (var reader = new BufferedReader(new InputStreamReader(p.getInputStream(), StandardCharsets.UTF_8))) {
             String line;
             while ((line = reader.readLine()) != null) journal.write(line);
         } catch (IOException e) {
             journal.write("Read error: " + e.getMessage());
-            log.error("Can't read process output", e);
         }
 
         try {
-            int code = process.waitFor();
+            int code = p.waitFor();
+            if (process != p) return;            // это уже старый процесс, состояние не трогаем
             if (stopRequested || code == 0) {
                 journal.write("Process finished");
-                state = State.FINISHED;
+                application.setState(State.FINISHED);
             } else {
                 journal.write("Process failed, exit code " + code);
-                state = State.FAILED;
+                application.setState(State.FAILED);
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
@@ -83,24 +86,37 @@ public final class ApplicationProcessContainer {
     }
 
     public boolean isAlive() {
-        var p = process;
-        return p != null && p.isAlive();
+        return process != null && process.isAlive();
     }
 
-    public Long pid() {
-        var p = process;
-        return p == null ? null : p.pid();
+    private Long pid() {
+        return process == null ? -1L : process.pid();
     }
 
-    public Application application() {
-        return application;
+    public AppSnapshot snapshot() {
+        return new AppSnapshot(application, pid(), isAlive(), log());
+    }
+
+    public UUID id() {
+        return application.getAppId();
+    }
+
+    public String name() {
+        return application.getName();
+    }
+
+    public String profile() {
+        return application.getConfiguration().getProfile();
     }
 
     public Collection<String> log() {
         return journal.log();
     }
 
-    public State getState() {
-        return state;
+    @Override
+    public String toString() {
+        return "ApplicationRuntime{" +
+                "application=" + application +
+                '}';
     }
 }

@@ -43,11 +43,4 @@ public class InMemoryJournal implements Journal {
         log.debug("Current {} size, clear all element.", lines.size());
         lines.clear();
     }
-
-    @Override
-    public String toString() {
-        return "InMemoryJournal{" +
-                "lines=" + lines +
-                '}';
-    }
 }
