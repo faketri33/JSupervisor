@@ -10,9 +10,10 @@ import java.nio.file.Path;
 
 
 public class Main {
+
     private static final Logger log = LoggerFactory.getLogger(Main.class);
 
-    public static void main(String[] args) {
+    static void main(String[] args) {
         if (args.length == 0) {
             log.error("No one argument present");
             return;

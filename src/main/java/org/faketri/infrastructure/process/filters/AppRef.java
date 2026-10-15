@@ -4,10 +4,9 @@ import org.faketri.infrastructure.process.ApplicationRuntime;
 
 import java.util.Optional;
 import java.util.UUID;
-import java.util.function.Predicate;
 
-public sealed interface AppRef extends Predicate<ApplicationRuntime> {
-
+public sealed interface AppRef extends Filters {
+    // Hard check only for one element searching
     static AppRef parse(String raw) {
         if (raw == null || raw.isBlank()) throw new IllegalArgumentException("Empty app reference");
 
@@ -44,13 +43,17 @@ public sealed interface AppRef extends Predicate<ApplicationRuntime> {
 
     record ByName(String name) implements AppRef {
         public boolean test(ApplicationRuntime r) {
-            return r.name().equals(name);
+            return r.name().equalsIgnoreCase(name);
         }
     }
 
     record ByPid(long pid) implements AppRef {
+        public ByPid {
+            if (pid <= 0) throw new IllegalArgumentException("pid must be positive: " + pid);
+        }
+
         public boolean test(ApplicationRuntime r) {
-            return r.snapshot().pid() == pid;
+            return r.pid() == pid;
         }
     }
 }

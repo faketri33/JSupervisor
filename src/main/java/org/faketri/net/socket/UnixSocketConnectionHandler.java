@@ -1,6 +1,7 @@
 package org.faketri.net.socket;
 
 import org.faketri.net.RequestDispatcherCommand;
+import org.faketri.net.exceptions.request.BadRequestException;
 import org.faketri.net.exceptions.request.ErrorRequest;
 import org.faketri.net.handlers.ConnectionHandler;
 import org.faketri.net.io.FrameReader;
@@ -9,6 +10,7 @@ import org.faketri.net.io.dto.Frame;
 import org.faketri.net.io.dto.request.Request;
 import org.faketri.net.io.dto.response.ResponseEntry;
 import org.faketri.net.io.json.JsonObjectMapper;
+import org.faketri.net.io.json.exception.JsonProcessingException;
 import org.faketri.net.socket.mapper.RequestExceptionMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,8 +52,9 @@ final class UnixSocketConnectionHandler implements ConnectionHandler {
         try {
             Frame frame = FrameReader.read(channel);
             Request request = parser.decode(bytes(frame.payload()), Request.class);
-            log.debug(String.valueOf(request));
             return dispatch.dispatch(request);
+        } catch (JsonProcessingException e) {
+            return RequestExceptionMapper.map(new BadRequestException(e.getMessage()));
         } catch (ErrorRequest e) {
             return RequestExceptionMapper.map(e);
         } catch (Exception e) {

@@ -1,72 +1,70 @@
 package org.faketri.domain;
 
+import org.faketri.domain.exceptions.application.ApplicationException;
+
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 public class Application {
 
     private final UUID id;
     private final String name;
-
-    private final AppConfig configuration;
+    private final AppConfig config;
     private volatile State state;
+    private int restartCount;
 
-    private Application(String name, AppConfig configuration) {
+    public Application(String name, AppConfig config, State state, int restartCount) {
+        if (name == null || name.isBlank()) throw new ApplicationException("Name cannot be empty");
+
         this.id = UUID.randomUUID();
         this.name = name;
-        this.configuration = configuration;
-        this.state = State.PENDING;
+        this.config = Objects.requireNonNull(config);
+        this.state = Objects.requireNonNull(state);
+        this.restartCount = restartCount;
     }
 
-    public static Application of(String name, List<String> commands) {
-        return new Application(name, new AppConfig.Builder().commands(commands).build());
+    public Application(String name, AppConfig config) {
+        this(name, config, State.PENDING, 0);
     }
 
-    public static Application of(String name, AppConfig conf) {
-        return new Application(name, conf);
-    }
-
-    public UUID getAppId() {
+    public UUID id() {
         return id;
     }
 
-    public String getName() {
+    public String name() {
         return name;
     }
 
-    public AppConfig getConfiguration() {
-        return configuration;
+    public String profile() {
+        return config.profile();
     }
 
-    public synchronized State getState() {
+    public List<String> commands() {
+        return config.commands();
+    }
+
+    public State state() {
         return state;
     }
 
-    public synchronized void setState(State state) {
+    public synchronized void updateState(State state) {
         this.state = state;
     }
 
-    @Override
-    public final boolean equals(Object o) {
-        if (!(o instanceof Application that)) return false;
-
-        return id.equals(that.id) && name.equals(that.name) && configuration.equals(that.configuration);
+    public synchronized boolean tryRegisterRestart(int exitCode, boolean stopRequested) {
+        if (stopRequested) return false;
+        if (!config.restartPolicy().shouldRestart(exitCode)) return false;
+        if (restartCount >= config.maxRestart()) return false;
+        restartCount++;
+        return true;
     }
 
-    @Override
-    public int hashCode() {
-        int result = id.hashCode();
-        result = 31 * result + name.hashCode();
-        result = 31 * result + configuration.hashCode();
-        return result;
+    public synchronized void resetRestarts() {
+        restartCount = 0;
     }
 
-    @Override
-    public String toString() {
-        return "Application{" +
-                "name='" + name + '\'' +
-                ", id=" + id +
-                ", state=" + state +
-                '}';
+    public synchronized int restartCount() {
+        return restartCount;
     }
 }

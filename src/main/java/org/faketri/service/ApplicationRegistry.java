@@ -1,11 +1,11 @@
 package org.faketri.service;
 
 import org.faketri.infrastructure.process.ApplicationRuntime;
+import org.faketri.infrastructure.process.filters.Filters;
 
 import java.util.Collection;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.function.Predicate;
 
 public interface ApplicationRegistry {
 
@@ -13,7 +13,7 @@ public interface ApplicationRegistry {
 
     Optional<ApplicationRuntime> remove(UUID id);
 
-    Collection<ApplicationRuntime> findAll(Predicate<ApplicationRuntime> p);
+    Collection<ApplicationRuntime> findAll(Filters p);
 
-    Optional<ApplicationRuntime> find(Predicate<ApplicationRuntime> p);
+    Optional<ApplicationRuntime> find(Filters p);
 }

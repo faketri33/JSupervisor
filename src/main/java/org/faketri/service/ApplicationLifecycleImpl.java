@@ -2,8 +2,7 @@ package org.faketri.service;
 
 import org.faketri.domain.exceptions.application.ApplicationException;
 import org.faketri.infrastructure.process.ApplicationRuntime;
-
-import java.util.function.Predicate;
+import org.faketri.infrastructure.process.filters.Filters;
 
 public class ApplicationLifecycleImpl implements ApplicationLifecycle {
     private final ApplicationRegistry appRegistry;
@@ -13,21 +12,22 @@ public class ApplicationLifecycleImpl implements ApplicationLifecycle {
     }
 
     @Override
-    public void start(Predicate<ApplicationRuntime> p) {
+    public void start(Filters p) {
         appRegistry.find(p).ifPresentOrElse(ApplicationRuntime::start, () -> {
-            throw new ApplicationException("");
+            throw new ApplicationException("Cannot find application for stop " + p);
         });
     }
 
     @Override
-    public void restart(Predicate<ApplicationRuntime> p) {
-        throw new UnsupportedOperationException();
+    public void restart(Filters p) {
+        stop(p);
+        start(p);
     }
 
     @Override
-    public void stop(Predicate<ApplicationRuntime> p) {
+    public void stop(Filters p) {
         appRegistry.find(p).ifPresentOrElse(ApplicationRuntime::stop, () -> {
-            throw new ApplicationException("");
+            throw new ApplicationException("Cannot find application for stop" + p);
         });
     }
 }
