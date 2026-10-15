@@ -19,7 +19,6 @@ public final class Args {
             String a = raw.get(i);
 
             if (a.startsWith("--") && a.length() > 2) {
-                // --key, --key=value, --key value
                 String body = a.substring(2);
                 int eq = body.indexOf('=');
                 String key = eq < 0 ? body : body.substring(0, eq);
@@ -98,12 +97,4 @@ public final class Args {
         return options.getOrDefault(key, List.of());
     }
 
-    @Override
-    public String toString() {
-        return "Args{" +
-                "positional=" + positional +
-                ", flags=" + flags +
-                ", options=" + options +
-                '}';
-    }
 }
