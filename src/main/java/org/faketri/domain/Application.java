@@ -15,7 +15,7 @@ public class Application {
     private int restartCount;
 
     public Application(String name, AppConfig config, State state, int restartCount) {
-        if (name == null || name.isBlank()) throw new ApplicationException("Name cannot be empty");
+        if (name.isBlank()) throw new ApplicationException("Name cannot be empty");
 
         this.id = UUID.randomUUID();
         this.name = name;
