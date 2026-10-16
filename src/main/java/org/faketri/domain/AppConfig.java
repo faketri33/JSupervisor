@@ -1,49 +1,34 @@
 package org.faketri.domain;
 
 
+import org.faketri.utils.config.Constants;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public final class AppConfig {
+public record AppConfig(List<String> commands, RestartPolicy restartPolicy, int maxRestart, String profile) {
 
-    private final List<String> commands;
-
-    private final RestartPolicy restartPolicy;
-    private final int maxRestart;
-    private final String profile;
+    public AppConfig(List<String> commands, RestartPolicy restartPolicy, int maxRestart, String profile) {
+        this.commands = List.copyOf(commands);
+        this.restartPolicy = restartPolicy;
+        this.maxRestart = maxRestart;
+        this.profile = profile;
+    }
 
     private AppConfig(Builder builder) {
-        commands = builder.commands;
-        restartPolicy = builder.restartPolicy;
-        maxRestart = builder.maxRestart;
-        profile = builder.profile;
-    }
-
-    public List<String> getCommands() {
-        return commands;
-    }
-
-    public RestartPolicy isRestartable() {
-        return restartPolicy;
-    }
-
-    public int getMaxRestart() {
-        return maxRestart;
-    }
-
-    public String getProfile() {
-        return profile;
+        this(builder.commands, builder.restartPolicy, builder.maxRestart, builder.profile);
     }
 
     @Override
     public boolean equals(Object o) {
-        if (!(o instanceof AppConfig appConfig)) return false;
+        if (!(o instanceof AppConfig(List<String> commands1, RestartPolicy policy, int restart, String profile1)))
+            return false;
 
-        return maxRestart == appConfig.maxRestart
-                && commands.equals(appConfig.commands)
-                && restartPolicy == appConfig.restartPolicy
-                && Objects.equals(profile, appConfig.profile);
+        return maxRestart == restart
+                && commands.equals(commands1)
+                && restartPolicy == policy
+                && Objects.equals(profile, profile1);
     }
 
     @Override
@@ -57,9 +42,9 @@ public final class AppConfig {
 
     public static class Builder {
         private final List<String> commands = new ArrayList<>();
-        private RestartPolicy restartPolicy;
-        private int maxRestart;
-        private String profile;
+        private RestartPolicy restartPolicy = Constants.ConfigurationConstants.RESTART_POLICY;
+        private int maxRestart = Constants.ConfigurationConstants.MAX_RESTART_COUNT;
+        private String profile = Constants.ConfigurationConstants.DEFAULT_PROFILE;
 
         public Builder commands(String command) {
             this.commands.add(command);

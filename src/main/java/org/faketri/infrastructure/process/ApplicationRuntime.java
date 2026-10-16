@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.UUID;
 
 public final class ApplicationRuntime {
@@ -26,8 +27,8 @@ public final class ApplicationRuntime {
     private volatile boolean stopRequested;
 
     public ApplicationRuntime(Application application, Journal journal) {
-        this.application = application;
-        this.journal = journal;
+        this.application = Objects.requireNonNull(application);
+        this.journal = Objects.requireNonNull(journal);
     }
 
     public synchronized void start() {
@@ -36,26 +37,26 @@ public final class ApplicationRuntime {
             journal.clear();
             stopRequested = false;
 
-            Process p = new ProcessBuilder(application.getConfiguration().getCommands())
+            process = new ProcessBuilder(application.commands())
                     .redirectErrorStream(true)
                     .start();
-            process = p;
-            application.setState(State.RUNNING);
+
+            application.updateState(State.RUNNING);
 
             Thread.ofPlatform()
-                    .name("journal-" + application.getName())
+                    .name("journal-" + application.name())
                     .daemon(true)
-                    .start(() -> watch(p));
+                    .start(() -> watch(process));
 
         } catch (IOException e) {
             journal.write("Can't start process, " + e.getMessage());
             log.error("Can't start process", e);
-            application.setState(State.FAILED);
+            application.updateState(State.FAILED);
             throw new ApplicationException(e.getMessage());
         }
     }
 
-    private synchronized void watch(Process p) {
+    private void watch(Process p) {
         try (var reader = new BufferedReader(new InputStreamReader(p.getInputStream(), StandardCharsets.UTF_8))) {
             String line;
             while ((line = reader.readLine()) != null) journal.write(line);
@@ -65,17 +66,34 @@ public final class ApplicationRuntime {
 
         try {
             int code = p.waitFor();
-            if (process != p) return;            // это уже старый процесс, состояние не трогаем
+            if (process != p) return;
             if (stopRequested || code == 0) {
                 journal.write("Process finished");
-                application.setState(State.FINISHED);
+                application.updateState(State.FINISHED);
             } else {
                 journal.write("Process failed, exit code " + code);
-                application.setState(State.FAILED);
+                application.updateState(State.FAILED);
+
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
+    }
+
+    public UUID id() {
+        return application.id();
+    }
+
+    public String name() {
+        return application.name();
+    }
+
+    public State state() {
+        return application.state();
+    }
+
+    public String profile() {
+        return application.profile();
     }
 
     public void stop() {
@@ -89,24 +107,12 @@ public final class ApplicationRuntime {
         return process != null && process.isAlive();
     }
 
-    private Long pid() {
+    public Long pid() {
         return process == null ? -1L : process.pid();
     }
 
     public AppSnapshot snapshot() {
-        return new AppSnapshot(application, pid(), isAlive(), log());
-    }
-
-    public UUID id() {
-        return application.getAppId();
-    }
-
-    public String name() {
-        return application.getName();
-    }
-
-    public String profile() {
-        return application.getConfiguration().getProfile();
+        return new AppSnapshot(id(), name(), state(), profile(), pid(), isAlive(), log());
     }
 
     public Collection<String> log() {
@@ -114,9 +120,17 @@ public final class ApplicationRuntime {
     }
 
     @Override
-    public String toString() {
-        return "ApplicationRuntime{" +
-                "application=" + application +
-                '}';
+    public boolean equals(Object o) {
+        if (!(o instanceof ApplicationRuntime that)) return false;
+
+        return stopRequested == that.stopRequested && application.equals(that.application) && journal.equals(that.journal);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = application.hashCode();
+        result = 31 * result + journal.hashCode();
+        result = 31 * result + Boolean.hashCode(stopRequested);
+        return result;
     }
 }

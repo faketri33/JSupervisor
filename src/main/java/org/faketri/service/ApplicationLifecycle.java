@@ -1,14 +1,12 @@
 package org.faketri.service;
 
-import org.faketri.infrastructure.process.ApplicationRuntime;
-
-import java.util.function.Predicate;
+import org.faketri.infrastructure.process.filters.Filters;
 
 public interface ApplicationLifecycle {
 
-    void start(Predicate<ApplicationRuntime> p);
+    void start(Filters p);
 
-    void restart(Predicate<ApplicationRuntime> p);
+    void restart(Filters p);
 
-    void stop(Predicate<ApplicationRuntime> p);
+    void stop(Filters p);
 }

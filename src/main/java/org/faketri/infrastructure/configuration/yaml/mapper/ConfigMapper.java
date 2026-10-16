@@ -9,7 +9,7 @@ public final class ConfigMapper {
     }
 
     public static Application toDto(String name, ConfigEntry entry) {
-        return Application.of(name,
+        return new Application(name,
                 new AppConfig.Builder()
                         .commands(entry.getCommand())
                         .maxRestartCount(entry.getMaxRestartCount())

@@ -4,7 +4,7 @@ import org.faketri.domain.Application;
 import org.faketri.infrastructure.configuration.ConfigurationReaderFactory;
 import org.faketri.infrastructure.controllers.SearchApplicationController;
 import org.faketri.infrastructure.process.ApplicationRuntime;
-import org.faketri.infrastructure.process.journal.InMemoryJournal;
+import org.faketri.infrastructure.process.journal.JournalFactory;
 import org.faketri.net.ServerChannel;
 import org.faketri.net.ServerFactory;
 import org.faketri.net.handlers.StupidDispatcher;
@@ -30,7 +30,7 @@ public final class AppInstance {
                 .read();
 
         ApplicationRegistry registry = new AppRegistryImpl();
-        apps.forEach(a -> registry.add(new ApplicationRuntime(a, new InMemoryJournal())));
+        apps.forEach(a -> registry.add(new ApplicationRuntime(a, JournalFactory.defaultInstance())));
 
         var controller = new SearchApplicationController(registry);
 
