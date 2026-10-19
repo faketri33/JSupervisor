@@ -7,14 +7,14 @@ import java.util.function.Function;
 
 public final class Args {
 
-    private static final Set<String> VALUE_OPTIONS = Set.of("filter", "tail", "profile");
-
     private final List<String> positional = new ArrayList<>();
     private final Set<String> flags = new HashSet<>();
     private final Map<String, List<String>> options = new HashMap<>();
 
     @JsonCreator
-    public Args(List<String> raw) {
+    public Args(List<String> raw, Set<String> valueOptions) {
+        if (raw == null) return;
+
         for (int i = 0; i < raw.size(); i++) {
             String a = raw.get(i);
 
@@ -23,7 +23,7 @@ public final class Args {
                 int eq = body.indexOf('=');
                 String key = eq < 0 ? body : body.substring(0, eq);
 
-                if (VALUE_OPTIONS.contains(key)) {
+                if (valueOptions.contains(key)) {
                     String value;
                     if (eq >= 0) {
                         value = body.substring(eq + 1);
@@ -55,6 +55,10 @@ public final class Args {
         } catch (NumberFormatException e) {
             return false;
         }
+    }
+
+    public Set<String> flagNames() {
+        return flags;
     }
 
     public String positional(int i) {

@@ -2,21 +2,29 @@ package org.faketri.infrastructure.commands;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 
-import java.util.List;
+import java.util.Set;
 
 public enum Command {
-    HELP("Show all commands", List.of()),
-    PS("Show applications", List.of("-a", "--all", "--filter", "name=", "status=", "id=", "pid=")),
-    RUN("Execute application", List.of("name")),
-    RESTART("Restart application", List.of("name")),
-    STOP("Stop application", List.of("name"));
+    HELP("Show all commands", Target.NONE, Set.of(), Set.of()),
+    PS("Show applications", Target.MANY, Set.of("a", "all"), Set.of("filter")),
+    RUN("Execute application", Target.ONE, Set.of(), Set.of()),
+    RESTART("Restart application", Target.ONE, Set.of(), Set.of()),
+    STOP("Stop application", Target.ONE, Set.of(), Set.of());
+
+    public enum Target {
+        NONE, ONE, MANY,
+    }
 
     private final String description;
-    private final List<String> allowedArgs;
+    private final Target target;
+    private final Set<String> flags;
+    private final Set<String> options;
 
-    Command(String description, List<String> allowedArgs) {
+    Command(String description, Target target, Set<String> flags, Set<String> options) {
         this.description = description;
-        this.allowedArgs = List.copyOf(allowedArgs);
+        this.target = target;
+        this.flags = Set.copyOf(flags);
+        this.options = Set.copyOf(options);
     }
 
     @JsonCreator
@@ -24,18 +32,26 @@ public enum Command {
         return Command.valueOf(key.toUpperCase());
     }
 
-    public String description(){
+    public String description() {
         return description;
     }
 
-    public List<String> allowedArgs(){
-        return allowedArgs;
+    public Set<String> flags() {
+        return flags;
+    }
+
+    public Set<String> options() {
+        return options;
+    }
+
+    public Target target() {
+        return target;
     }
 
     @Override
     public String toString() {
         return name() +
-                " — '" + description + '\'' +
-                ", allowedArgs=" + allowedArgs;
+                " — '" + description() + '\'' +
+                ", flags=" + flags();
     }
 }

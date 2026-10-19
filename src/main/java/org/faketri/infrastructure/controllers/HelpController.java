@@ -10,7 +10,7 @@ import java.util.List;
 
 public class HelpController implements Controller {
 
-    public ResponseEntry<List<String>> help(ProcessedRequest request){
+    public ResponseEntry<List<String>> help(ProcessedRequest request) {
         return ResponseEntry.ok(Arrays.stream(Command.values()).map(Command::toString).toList());
     }
 

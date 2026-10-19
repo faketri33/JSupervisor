@@ -21,7 +21,7 @@ public interface RequestDispatcherCommand {
     /**
      * Registers a handler for the specified request type.
      *
-     * @param command    request type to associate with the handler
+     * @param command request type to associate with the handler
      * @param handler handler invoked for requests of the given type
      */
     void registerNewDispatch(Command command, CommandHandler handler);
