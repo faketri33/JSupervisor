@@ -2,6 +2,7 @@ package org.faketri.core;
 
 import org.faketri.domain.Application;
 import org.faketri.infrastructure.configuration.ConfigurationReaderFactory;
+import org.faketri.infrastructure.controllers.HelpController;
 import org.faketri.infrastructure.controllers.LifecycleController;
 import org.faketri.infrastructure.controllers.SearchApplicationController;
 import org.faketri.infrastructure.process.ApplicationRuntime;
@@ -34,15 +35,17 @@ public final class AppInstance {
 
         ApplicationRegistry registry = new AppRegistryImpl();
         ApplicationLifecycle lifecycle = new ApplicationLifecycleImpl(registry);
-        
+
         apps.forEach(a -> registry.add(new ApplicationRuntime(a, JournalFactory.defaultInstance())));
 
         var controller = new SearchApplicationController(registry);
         var lifeController = new LifecycleController(lifecycle);
+        var helpController = new HelpController();
 
         var dispatcher = new StupidDispatcher();
         controller.registerTo(dispatcher);
         lifeController.registerTo(dispatcher);
+        helpController.registerTo(dispatcher);
 
         return new AppInstance(ServerFactory.newUnixSocketServer(dispatcher));
     }
@@ -50,4 +53,5 @@ public final class AppInstance {
     public void start() {
         server.start();
     }
+
 }

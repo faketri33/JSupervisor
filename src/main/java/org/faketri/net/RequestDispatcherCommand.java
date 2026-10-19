@@ -1,5 +1,6 @@
 package org.faketri.net;
 
+import org.faketri.infrastructure.commands.Command;
 import org.faketri.net.handlers.CommandHandler;
 import org.faketri.net.io.dto.request.ProcessedRequest;
 import org.faketri.net.io.dto.response.ResponseEntry;
@@ -20,8 +21,8 @@ public interface RequestDispatcherCommand {
     /**
      * Registers a handler for the specified request type.
      *
-     * @param path    request type to associate with the handler
+     * @param command request type to associate with the handler
      * @param handler handler invoked for requests of the given type
      */
-    void registerNewDispatch(String path, CommandHandler handler);
+    void registerNewDispatch(Command command, CommandHandler handler);
 }

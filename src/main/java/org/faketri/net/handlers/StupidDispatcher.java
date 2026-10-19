@@ -1,5 +1,6 @@
 package org.faketri.net.handlers;
 
+import org.faketri.infrastructure.commands.Command;
 import org.faketri.net.RequestDispatcherCommand;
 import org.faketri.net.exceptions.request.BadRequestException;
 import org.faketri.net.exceptions.request.ErrorRequest;
@@ -12,7 +13,7 @@ import java.util.Map;
 import java.util.Objects;
 
 public final class StupidDispatcher implements RequestDispatcherCommand {
-    private final Map<String, CommandHandler> routes = new HashMap<>();
+    private final Map<Command, CommandHandler> routes = new HashMap<>();
 
     public ResponseEntry<?> dispatch(ProcessedRequest req) {
         var h = routes.get(req.path());
@@ -27,9 +28,9 @@ public final class StupidDispatcher implements RequestDispatcherCommand {
     }
 
     @Override
-    public void registerNewDispatch(String mainCommand, CommandHandler handler) {
-        if (mainCommand == null || mainCommand.isBlank())
+    public void registerNewDispatch(Command command, CommandHandler handler) {
+        if (command == null)
             throw new IllegalArgumentException("Command address cannot be empty");
-        this.routes.put(mainCommand, Objects.requireNonNull(handler, "Handler cannot be null"));
+        this.routes.put(command, Objects.requireNonNull(handler, "Handler cannot be null"));
     }
 }
