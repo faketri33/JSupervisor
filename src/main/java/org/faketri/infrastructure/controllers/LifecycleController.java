@@ -1,6 +1,7 @@
 package org.faketri.infrastructure.controllers;
 
 import org.faketri.domain.exceptions.application.ApplicationException;
+import org.faketri.infrastructure.commands.Command;
 import org.faketri.net.EStatusCode;
 import org.faketri.net.RequestDispatcherCommand;
 import org.faketri.net.exceptions.request.ErrorRequest;
@@ -41,8 +42,8 @@ public class LifecycleController implements Controller {
 
     @Override
     public void registerTo(RequestDispatcherCommand dispatcherCommand) {
-        dispatcherCommand.registerNewDispatch("run", this::start);
-        dispatcherCommand.registerNewDispatch("stop", this::stop);
-        dispatcherCommand.registerNewDispatch("restart", this::restart);
+        dispatcherCommand.registerNewDispatch(Command.RUN, this::start);
+        dispatcherCommand.registerNewDispatch(Command.STOP, this::stop);
+        dispatcherCommand.registerNewDispatch(Command.RESTART, this::restart);
     }
 }

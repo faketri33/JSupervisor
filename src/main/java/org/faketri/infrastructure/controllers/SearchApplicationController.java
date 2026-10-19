@@ -2,6 +2,7 @@ package org.faketri.infrastructure.controllers;
 
 
 import org.faketri.domain.dto.AppSnapshot;
+import org.faketri.infrastructure.commands.Command;
 import org.faketri.infrastructure.process.ApplicationRuntime;
 import org.faketri.net.RequestDispatcherCommand;
 import org.faketri.net.io.dto.request.ProcessedRequest;
@@ -32,6 +33,6 @@ public final class SearchApplicationController implements Controller {
     }
 
     public void registerTo(RequestDispatcherCommand dispatcherCommand) {
-        dispatcherCommand.registerNewDispatch("ps", this::ps);
+        dispatcherCommand.registerNewDispatch(Command.PS, this::ps);
     }
 }
