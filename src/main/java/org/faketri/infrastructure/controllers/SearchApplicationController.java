@@ -18,7 +18,15 @@ public final class SearchApplicationController implements Controller {
     }
 
     public ResponseEntry<Collection<AppSnapshot>> ps(ProcessedRequest request) {
-        return ResponseEntry.ok(registry.findAll(request.filters()).stream()
+        var fl = request.filters();
+
+        boolean statusGiven = request.args().values("filter")
+                .stream().anyMatch(f -> f.startsWith("status="));
+
+        if (!request.args().flag("a", "all") && !statusGiven)
+            fl = fl.and(ApplicationRuntime::isAlive);
+
+        return ResponseEntry.ok(registry.findAll(fl).stream()
                 .map(ApplicationRuntime::snapshot)
                 .toList());
     }

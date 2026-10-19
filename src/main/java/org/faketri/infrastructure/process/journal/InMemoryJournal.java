@@ -4,7 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
-import java.util.Collections;
+import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -36,7 +36,7 @@ public class InMemoryJournal implements Journal {
     }
 
     public Collection<String> log() {
-        return Collections.unmodifiableCollection(lines);
+        return List.copyOf(lines);
     }
 
     public void clear() {
