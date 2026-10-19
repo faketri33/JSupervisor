@@ -33,7 +33,7 @@
 Команды отправляются в виде JSON, например:
 
 ```json
-{"command": "run", "app": "test"}
+{"command": "run", "args": ["--filter","name=test"]}
 ```
 
 ![Unix domain send message](assets/unixdomain.png)
