@@ -1,7 +1,7 @@
 package org.faketri.net;
 
 import org.faketri.net.handlers.CommandHandler;
-import org.faketri.net.io.dto.request.Request;
+import org.faketri.net.io.dto.request.ProcessedRequest;
 import org.faketri.net.io.dto.response.ResponseEntry;
 
 /**
@@ -15,7 +15,7 @@ public interface RequestDispatcherCommand {
      * @param req request to dispatch
      * @return response produced by the matching handler
      */
-    ResponseEntry<?> dispatch(Request req);
+    ResponseEntry<?> dispatch(ProcessedRequest req);
 
     /**
      * Registers a handler for the specified request type.

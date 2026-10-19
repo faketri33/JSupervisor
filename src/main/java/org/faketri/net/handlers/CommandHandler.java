@@ -1,6 +1,7 @@
 package org.faketri.net.handlers;
 
 import org.faketri.net.exceptions.request.ErrorRequest;
+import org.faketri.net.io.dto.request.ProcessedRequest;
 import org.faketri.net.io.dto.request.Request;
 import org.faketri.net.io.dto.response.ResponseEntry;
 
@@ -21,5 +22,5 @@ public interface CommandHandler {
      * @return response produced for the given request
      * @throws ErrorRequest if the request cannot be processed
      */
-    ResponseEntry<?> handle(Request req) throws ErrorRequest;
+    ResponseEntry<?> handle(ProcessedRequest req) throws ErrorRequest;
 }

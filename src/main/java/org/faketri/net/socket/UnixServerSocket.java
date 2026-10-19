@@ -27,11 +27,11 @@ public class UnixServerSocket implements ServerChannel {
     }
 
     public static UnixServerSocket of() {
-        return new UnixServerSocket(new UnixSocketConnectionHandler(new StupidDispatcher()));
+        return of(new StupidDispatcher());
     }
 
     public static UnixServerSocket of(RequestDispatcherCommand dispatcherCommand) {
-        return new UnixServerSocket(new UnixSocketConnectionHandler(dispatcherCommand));
+        return new UnixServerSocket(new UnixSocketConnectionHandler(dispatcherCommand, new UnixRequestProcessing()));
     }
 
     @Override

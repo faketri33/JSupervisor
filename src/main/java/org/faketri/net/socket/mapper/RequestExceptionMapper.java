@@ -13,9 +13,9 @@ public class RequestExceptionMapper {
     }
 
 
-    public static <T extends ErrorRequest> ResponseEntry<?> map(T ex) {
+    public static <E extends ErrorRequest> ResponseEntry<?> map(E ex) {
         log.error(ex.getMessage());
-        return ResponseEntry.builder().code(ex.getCode()).body("Bad Request").build();
+        return ResponseEntry.builder().code(ex.getCode()).body(ex.getMessage()).build();
     }
 
     public static ResponseEntry<String> map(Exception ex) {

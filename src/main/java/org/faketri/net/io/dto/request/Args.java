@@ -82,9 +82,8 @@ public final class Args {
     }
 
     public boolean flag(String... names) {
-        for (String n : names) {
+        for (String n : names)
             if (flags.contains(n)) return true;
-        }
         return false;
     }
 

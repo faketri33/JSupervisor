@@ -4,6 +4,7 @@ import org.faketri.net.RequestDispatcherCommand;
 import org.faketri.net.exceptions.request.BadRequestException;
 import org.faketri.net.exceptions.request.ErrorRequest;
 import org.faketri.net.handlers.ConnectionHandler;
+import org.faketri.net.handlers.RequestProcessing;
 import org.faketri.net.io.FrameReader;
 import org.faketri.net.io.FrameWriter;
 import org.faketri.net.io.dto.Frame;
@@ -24,10 +25,12 @@ final class UnixSocketConnectionHandler implements ConnectionHandler {
     private static final Logger log = LoggerFactory.getLogger(UnixSocketConnectionHandler.class);
 
     private static final JsonObjectMapper parser = new JsonObjectMapper();
+    private final RequestProcessing processing;
     private final RequestDispatcherCommand dispatch;
 
-    public UnixSocketConnectionHandler(RequestDispatcherCommand dispatch) {
+    public UnixSocketConnectionHandler(RequestDispatcherCommand dispatch, RequestProcessing processing) {
         this.dispatch = Objects.requireNonNull(dispatch);
+        this.processing = Objects.requireNonNull(processing);
     }
 
     private static byte[] bytes(ByteBuffer buf) {
@@ -52,9 +55,10 @@ final class UnixSocketConnectionHandler implements ConnectionHandler {
         try {
             Frame frame = FrameReader.read(channel);
             Request request = parser.decode(bytes(frame.payload()), Request.class);
-            return dispatch.dispatch(request);
+            return dispatch.dispatch(processing.process(request));
         } catch (JsonProcessingException e) {
-            return RequestExceptionMapper.map(new BadRequestException(e.getMessage()));
+            log.error(e.getMessage());
+            return RequestExceptionMapper.map(new BadRequestException("Cannot read request params"));
         } catch (ErrorRequest e) {
             return RequestExceptionMapper.map(e);
         } catch (Exception e) {
