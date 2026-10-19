@@ -16,9 +16,9 @@ public final class StupidDispatcher implements RequestDispatcherCommand {
     private final Map<Command, CommandHandler> routes = new HashMap<>();
 
     public ResponseEntry<?> dispatch(ProcessedRequest req) {
-        var h = routes.get(req.path());
+        var h = routes.get(req.command());
         try {
-            if (h == null) throw new BadRequestException("Unknown command " + req.path());
+            if (h == null) throw new BadRequestException("Unknown command " + req.command());
             return h.handle(req);
         } catch (ErrorRequest e) {
             return RequestExceptionMapper.map(e);
