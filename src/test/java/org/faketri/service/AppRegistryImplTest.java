@@ -3,18 +3,15 @@ package org.faketri.service;
 import org.faketri.domain.AppConfig;
 import org.faketri.domain.Application;
 import org.faketri.domain.exceptions.application.ApplicationException;
+import org.faketri.infrastructure.filter.Query;
+import org.faketri.infrastructure.filter.QueryFactory;
 import org.faketri.infrastructure.process.ApplicationRuntime;
-import org.faketri.infrastructure.process.filters.AppRef;
-import org.faketri.infrastructure.process.filters.RuntimeFilters;
+import org.faketri.infrastructure.process.filters.RuntimeField;
 import org.faketri.infrastructure.process.journal.JournalFactory;
-import org.faketri.utils.config.Constants;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -22,22 +19,28 @@ import static org.junit.jupiter.api.Assertions.*;
 class AppRegistryImplTest {
 
     private final AppRegistryImpl registry = new AppRegistryImpl();
+    private final QueryFactory<ApplicationRuntime> queries = new QueryFactory<>(List.of(RuntimeField.values()));
+
+    // ---------------- helpers ----------------
 
     private static ApplicationRuntime runtime(String name) {
-        return runtime(name, Constants.ConfigurationConstants.DEFAULT_PROFILE);
+        return runtime(name, "DEFAULT");
     }
 
     private static ApplicationRuntime runtime(String name, String profile) {
-        var config = new AppConfig.Builder()
-                .commands(List.of("ps"))
-                .profile(profile)
-                .build();
+        var config = new AppConfig.Builder().profile(profile).build();
         return new ApplicationRuntime(new Application(name, config), JournalFactory.defaultInstance());
     }
 
-    private int size() {
-        return registry.findAll(r -> true).size();
+    private static Query<ApplicationRuntime> byName(String name) {
+        return Query.named("name=" + name, r -> r.name().equals(name));
     }
+
+    private int size() {
+        return registry.findAll(Query.all()).size();
+    }
+
+    // ---------------- add ----------------
 
     @Test
     void addStoresRuntime() {
@@ -46,7 +49,7 @@ class AppRegistryImplTest {
         registry.add(rt);
 
         assertEquals(1, size());
-        assertSame(rt, registry.find(new AppRef.ById(rt.id())).orElseThrow());
+        assertSame(rt, registry.find(byName("alpha")).orElseThrow());
     }
 
     @Test
@@ -91,9 +94,9 @@ class AppRegistryImplTest {
     @Test
     void concurrentAddOfSameNameLetsExactlyOneThrough() throws Exception {
         int threads = 16;
-        var pool = Executors.newFixedThreadPool(threads);
-        var start = new CountDownLatch(1);
-        var succeeded = new AtomicInteger();
+        ExecutorService pool = Executors.newFixedThreadPool(threads);
+        CountDownLatch start = new CountDownLatch(1);
+        AtomicInteger succeeded = new AtomicInteger();
         List<Future<?>> futures = new ArrayList<>();
 
         for (int i = 0; i < threads; i++) {
@@ -109,12 +112,14 @@ class AppRegistryImplTest {
             }));
         }
         start.countDown();
-        for (var f : futures) f.get(5, TimeUnit.SECONDS);
+        for (Future<?> f : futures) f.get(5, TimeUnit.SECONDS);
         pool.shutdown();
-        pool.close();
+
         assertEquals(1, succeeded.get());
         assertEquals(1, size());
     }
+
+    // ---------------- remove ----------------
 
     @Test
     void removeReturnsRuntimeAndForgetsIt() {
@@ -123,7 +128,7 @@ class AppRegistryImplTest {
 
         assertSame(rt, registry.remove(rt.id()).orElseThrow());
 
-        assertTrue(registry.find(new AppRef.ById(rt.id())).isEmpty());
+        assertTrue(registry.find(byName("alpha")).isEmpty());
         assertEquals(0, size());
     }
 
@@ -146,12 +151,14 @@ class AppRegistryImplTest {
 
     @Test
     void removeNullThrows() {
-        assertFalse(registry.remove(null).isPresent());
+        assertEquals(Optional.empty(), registry.remove(null));
     }
+
+    // ---------------- find ----------------
 
     @Test
     void findOnEmptyRegistryReturnsEmpty() {
-        assertTrue(registry.find(r -> true).isEmpty());
+        assertTrue(registry.find(Query.all()).isEmpty());
     }
 
     @Test
@@ -161,14 +168,14 @@ class AppRegistryImplTest {
         registry.add(alpha);
         registry.add(beta);
 
-        assertSame(beta, registry.find(r -> r.name().equals("beta")).orElseThrow());
+        assertSame(beta, registry.find(byName("beta")).orElseThrow());
     }
 
     @Test
     void findReturnsEmptyWhenNothingMatches() {
         registry.add(runtime("alpha"));
 
-        assertTrue(registry.find(r -> r.name().equals("nope")).isEmpty());
+        assertTrue(registry.find(byName("nope")).isEmpty());
     }
 
     @Test
@@ -178,39 +185,42 @@ class AppRegistryImplTest {
         registry.add(a);
         registry.add(b);
 
-        var found = registry.find(r -> r.profile().equals("WORKERS")).orElseThrow();
+        var found = registry.find(queries.parse(List.of("profile=WORKERS"))).orElseThrow();
 
         assertTrue(found == a || found == b);
     }
 
     @Test
-    void findWorksWithAppRef() {
-        var rt = runtime("alpha");
+    void findWorksWithParsedQueries() {
+        var rt = runtime("alpha", "WORKERS");
         registry.add(rt);
+        registry.add(runtime("beta"));
 
-        assertSame(rt, registry.find(new AppRef.ById(rt.id())).orElseThrow());
-        assertSame(rt, registry.find(new AppRef.ByName("alpha")).orElseThrow());
-        assertSame(rt, registry.find(new AppRef.ByName("ALPHA")).orElseThrow());
-        assertTrue(registry.find(new AppRef.ByName("nope")).isEmpty());
-        assertTrue(registry.find(new AppRef.ById(UUID.randomUUID())).isEmpty());
+        assertSame(rt, registry.find(queries.parse(List.of("name=alpha"))).orElseThrow());
+        assertSame(rt, registry.find(queries.parse(List.of("name=ALPHA"))).orElseThrow());
+        assertSame(rt, registry.find(queries.parse(List.of("id=" + rt.id().toString()))).orElseThrow());
+        assertSame(rt, registry.find(queries.parse(List.of("profile=WORKERS", "name=alpha"))).orElseThrow());
+        assertTrue(registry.find(queries.parse(List.of("name=nope"))).isEmpty());
+        assertTrue(registry.find(queries.parse(List.of("id=" + UUID.randomUUID()))).isEmpty());
     }
 
     @Test
     void notStartedRuntimeNeverMatchesAnyPid() {
         registry.add(runtime("alpha"));
 
-        assertTrue(registry.find(new AppRef.ByPid(1)).isEmpty());
-        assertThrows(IllegalArgumentException.class, () -> registry.find(new AppRef.ByPid(-1)));
+        assertTrue(registry.find(queries.parse(List.of("pid=1"))).isEmpty());
+        assertTrue(registry.find(queries.parse(List.of("pid=4821"))).isEmpty());
     }
 
+    // ---------------- findAll ----------------
 
     @Test
     void findAllOnEmptyRegistryReturnsEmptyList() {
-        assertTrue(registry.findAll(r -> true).isEmpty());
+        assertTrue(registry.findAll(Query.all()).isEmpty());
     }
 
     @Test
-    void findAllWithAlwaysTrueReturnsEverything() {
+    void findAllWithAllReturnsEverything() {
         var a = runtime("a");
         var b = runtime("b");
         var c = runtime("c");
@@ -218,11 +228,11 @@ class AppRegistryImplTest {
         registry.add(b);
         registry.add(c);
 
-        assertEquals(Set.of(a, b, c), Set.copyOf(registry.findAll(r -> true)));
+        assertEquals(Set.of(a, b, c), Set.copyOf(registry.findAll(Query.all())));
     }
 
     @Test
-    void findAllFiltersByPredicate() {
+    void findAllFiltersByQuery() {
         var w1 = runtime("w1", "WORKERS");
         var w2 = runtime("w2", "WORKERS");
         var d1 = runtime("d1", "DEFAULT");
@@ -230,7 +240,7 @@ class AppRegistryImplTest {
         registry.add(w2);
         registry.add(d1);
 
-        var result = registry.findAll(r -> r.profile().equals("WORKERS"));
+        var result = registry.findAll(queries.parse(List.of("profile=WORKERS")));
 
         assertEquals(Set.of(w1, w2), Set.copyOf(result));
     }
@@ -239,27 +249,27 @@ class AppRegistryImplTest {
     void findAllReturnsEmptyListWhenNothingMatches() {
         registry.add(runtime("alpha"));
 
-        var result = registry.findAll(r -> false);
+        var result = registry.findAll(byName("nope"));
 
         assertNotNull(result);
         assertTrue(result.isEmpty());
     }
 
     @Test
-    void findAllCombinesWithFilters() {
+    void findAllCombinesSeveralConditions() {
         var a = runtime("alpha", "WORKERS");
         registry.add(a);
         registry.add(runtime("beta", "WORKERS"));
 
-        var result = registry.findAll(RuntimeFilters.parse(List.of("profile=WORKERS", "name=alp")));
+        var result = registry.findAll(queries.parse(List.of("profile=WORKERS", "name=alpha")));
 
-        assertEquals(List.of(a), result);
+        assertEquals(Set.of(a), Set.copyOf(result));
     }
 
     @Test
     void findAllResultIsDetachedFromRegistry() {
         registry.add(runtime("alpha"));
-        var result = registry.findAll(r -> true);
+        var result = registry.findAll(Query.all());
 
         registry.add(runtime("beta"));
 

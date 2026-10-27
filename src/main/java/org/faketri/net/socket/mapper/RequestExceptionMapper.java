@@ -5,7 +5,7 @@ import org.faketri.net.io.dto.response.ResponseEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class RequestExceptionMapper {
+public final class RequestExceptionMapper {
     private static final Logger log = LoggerFactory.getLogger(RequestExceptionMapper.class);
 
     private RequestExceptionMapper() {

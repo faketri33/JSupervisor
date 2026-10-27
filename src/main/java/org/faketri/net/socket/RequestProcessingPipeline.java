@@ -1,18 +1,18 @@
 package org.faketri.net.socket;
 
 import org.faketri.infrastructure.commands.Command;
-import org.faketri.infrastructure.process.filters.AppRef;
-import org.faketri.infrastructure.process.filters.Filters;
-import org.faketri.infrastructure.process.filters.RuntimeFilters;
 import org.faketri.net.handlers.RequestProcessing;
 import org.faketri.net.io.dto.request.Args;
-import org.faketri.net.io.dto.request.ProcessedRequest;
-import org.faketri.net.io.dto.request.Request;
+import org.faketri.net.io.dto.request.DispatchableRequest;
+import org.faketri.net.io.dto.request.InternalRequest;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 
-public class UnixRequestProcessing implements RequestProcessing {
+
+public final class RequestProcessingPipeline implements RequestProcessing {
 
     private static Command parseCommand(String raw) {
         if (raw == null || raw.isBlank()) throw new IllegalArgumentException("Command must not be empty");
@@ -44,19 +44,30 @@ public class UnixRequestProcessing implements RequestProcessing {
         }
     }
 
-    private static Filters resolveTarget(Command cmd, Args args) {
-        return switch (cmd.target()) {
-            case NONE -> Filters.all();
-            case ONE -> args.positional(0, AppRef::parse);
-            case MANY -> RuntimeFilters.parse(args.values("filter"));
-        };
+    private static void checkTarget(Command cmd, List<String> conditions) {
+        String name = cmd.name();
+        switch (cmd.target()) {
+            case NONE -> {
+                if (!conditions.isEmpty()) throw new IllegalArgumentException("'" + name + "' takes no arguments");
+            }
+            case ONE -> {
+                if (conditions.isEmpty()) throw new IllegalArgumentException("'" + name + "' needs a target");
+            }
+            case MANY -> {
+            }
+        }
     }
 
     @Override
-    public ProcessedRequest process(Request request) {
+    public DispatchableRequest process(InternalRequest request) {
         Command cmd = parseCommand(request.command());
         Args args = new Args(request.args(), cmd.options());
         checkArgs(cmd, args);
-        return new ProcessedRequest(cmd, args, resolveTarget(cmd, args));
+
+        List<String> conditions = new ArrayList<>(args.positionals());
+        conditions.addAll(args.values("filter"));
+        checkTarget(cmd, conditions);
+
+        return new DispatchableRequest(cmd, args, conditions);
     }
 }

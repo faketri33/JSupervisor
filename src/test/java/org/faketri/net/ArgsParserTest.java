@@ -22,25 +22,6 @@ class ArgsParserTest {
     private static final Set<String> PROFILE = Set.of("profile");
     private static final Set<String> FILTER_TAIL = Set.of("filter", "tail");
 
-    record ArgsCase(String name,
-                    Set<String> valueOptions,
-                    List<String> raw,
-                    List<String> positional,
-                    Set<String> flags,
-                    Map<String, List<String>> options) {
-        @Override
-        public String toString() {
-            return name;
-        }
-    }
-
-    record InvalidCase(String name, Set<String> valueOptions, List<String> raw) {
-        @Override
-        public String toString() {
-            return name;
-        }
-    }
-
     private static ArgsCase c(String name, Set<String> valueOptions, List<String> raw,
                               List<String> positional, Set<String> flags,
                               Map<String, List<String>> options) {
@@ -127,6 +108,16 @@ class ArgsParserTest {
         );
     }
 
+    static Stream<InvalidCase> invalid() {
+        return Stream.of(
+                new InvalidCase("option without value", FILTER, List.of("--filter")),
+                new InvalidCase("option at the very end", FILTER, List.of("server", "--filter")),
+                new InvalidCase("tail without value", TAIL, List.of("--tail")),
+                new InvalidCase("profile without value", PROFILE, List.of("--profile")),
+                new InvalidCase("second option has no value", FILTER_TAIL, List.of("--tail", "5", "--filter"))
+        );
+    }
+
     @ParameterizedTest(name = "{0}")
     @MethodSource("valid")
     void parses(ArgsCase c) {
@@ -145,16 +136,6 @@ class ArgsParserTest {
                 assertTrue(a.values(declared).isEmpty(), "unexpected values for " + declared);
             }
         }
-    }
-
-    static Stream<InvalidCase> invalid() {
-        return Stream.of(
-                new InvalidCase("option without value", FILTER, List.of("--filter")),
-                new InvalidCase("option at the very end", FILTER, List.of("server", "--filter")),
-                new InvalidCase("tail without value", TAIL, List.of("--tail")),
-                new InvalidCase("profile without value", PROFILE, List.of("--profile")),
-                new InvalidCase("second option has no value", FILTER_TAIL, List.of("--tail", "5", "--filter"))
-        );
     }
 
     @ParameterizedTest(name = "{0}")
@@ -218,5 +199,24 @@ class ArgsParserTest {
 
         var e = assertThrows(IllegalArgumentException.class, () -> a.positional(0, Integer::parseInt));
         assertTrue(e.getMessage().contains("Invalid argument 'abc'"), e.getMessage());
+    }
+
+    record ArgsCase(String name,
+                    Set<String> valueOptions,
+                    List<String> raw,
+                    List<String> positional,
+                    Set<String> flags,
+                    Map<String, List<String>> options) {
+        @Override
+        public String toString() {
+            return name;
+        }
+    }
+
+    record InvalidCase(String name, Set<String> valueOptions, List<String> raw) {
+        @Override
+        public String toString() {
+            return name;
+        }
     }
 }

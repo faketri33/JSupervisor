@@ -6,6 +6,7 @@ public interface Constants {
 
     class Global {
         public static final String APP_NAME = ApplicationProperties.getProperties("app.name");
+        public static final boolean IS_DEBUG = Boolean.parseBoolean(ApplicationProperties.getProperties("server.mode.debug"));
 
         private Global() {
         }

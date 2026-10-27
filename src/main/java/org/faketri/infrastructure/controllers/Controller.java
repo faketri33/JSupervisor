@@ -26,5 +26,5 @@ public interface Controller {
      * @param dispatcherCommand dispatcher responsible for routing requests
      *                          to registered controllers
      */
-    void registerTo(RequestDispatcherCommand dispatcherCommand);
+    void register(RequestDispatcherCommand dispatcherCommand);
 }

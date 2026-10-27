@@ -1,8 +1,9 @@
 package org.faketri.net;
 
 import org.faketri.infrastructure.commands.Command;
+import org.faketri.infrastructure.filter.QueryFactory;
 import org.faketri.net.handlers.CommandHandler;
-import org.faketri.net.io.dto.request.ProcessedRequest;
+import org.faketri.net.io.dto.request.DispatchableRequest;
 import org.faketri.net.io.dto.response.ResponseEntry;
 
 /**
@@ -16,7 +17,9 @@ public interface RequestDispatcherCommand {
      * @param req request to dispatch
      * @return response produced by the matching handler
      */
-    ResponseEntry<?> dispatch(ProcessedRequest req);
+    ResponseEntry<?> dispatch(DispatchableRequest req);
+
+    boolean verifyRoutes();
 
     /**
      * Registers a handler for the specified request type.
@@ -24,5 +27,7 @@ public interface RequestDispatcherCommand {
      * @param command request type to associate with the handler
      * @param handler handler invoked for requests of the given type
      */
-    void registerNewDispatch(Command command, CommandHandler handler);
+    <T> void register(Command command, CommandHandler<T> handler);
+
+    <T> void register(Command command, CommandHandler<T> handler, QueryFactory<T> queries);
 }

@@ -11,10 +11,6 @@ public enum Command {
     RESTART("Restart application", Target.ONE, Set.of(), Set.of()),
     STOP("Stop application", Target.ONE, Set.of(), Set.of());
 
-    public enum Target {
-        NONE, ONE, MANY,
-    }
-
     private final String description;
     private final Target target;
     private final Set<String> flags;
@@ -53,5 +49,9 @@ public enum Command {
         return name() +
                 " — '" + description() + '\'' +
                 ", flags=" + flags();
+    }
+
+    public enum Target {
+        NONE, ONE, MANY,
     }
 }

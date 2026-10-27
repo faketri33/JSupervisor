@@ -31,7 +31,7 @@ public class UnixServerSocket implements ServerChannel {
     }
 
     public static UnixServerSocket of(RequestDispatcherCommand dispatcherCommand) {
-        return new UnixServerSocket(new UnixSocketConnectionHandler(dispatcherCommand, new UnixRequestProcessing()));
+        return new UnixServerSocket(new UnixSocketConnectionHandler(dispatcherCommand, new RequestProcessingPipeline()));
     }
 
     @Override

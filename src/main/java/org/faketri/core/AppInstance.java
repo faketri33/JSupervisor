@@ -14,6 +14,7 @@ import org.faketri.service.AppRegistryImpl;
 import org.faketri.service.ApplicationLifecycle;
 import org.faketri.service.ApplicationLifecycleImpl;
 import org.faketri.service.ApplicationRegistry;
+import org.faketri.utils.config.Constants;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -38,16 +39,24 @@ public final class AppInstance {
 
         apps.forEach(a -> registry.add(new ApplicationRuntime(a, JournalFactory.defaultInstance())));
 
+        var dispatcher = getDispatcher(registry, lifecycle);
+
+        return new AppInstance(ServerFactory.newUnixSocketServer(dispatcher));
+    }
+
+    private static StupidDispatcher getDispatcher(ApplicationRegistry registry, ApplicationLifecycle lifecycle) {
         var controller = new SearchApplicationController(registry);
         var lifeController = new LifecycleController(lifecycle);
         var helpController = new HelpController();
 
         var dispatcher = new StupidDispatcher();
-        controller.registerTo(dispatcher);
-        lifeController.registerTo(dispatcher);
-        helpController.registerTo(dispatcher);
+        controller.register(dispatcher);
+        lifeController.register(dispatcher);
+        helpController.register(dispatcher);
 
-        return new AppInstance(ServerFactory.newUnixSocketServer(dispatcher));
+        if (!Constants.Global.IS_DEBUG && dispatcher.verifyRoutes())
+            throw new IllegalStateException("Not all commands have their own handlers.");
+        return dispatcher;
     }
 
     public void start() {

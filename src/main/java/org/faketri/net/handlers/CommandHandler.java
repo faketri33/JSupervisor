@@ -1,19 +1,18 @@
 package org.faketri.net.handlers;
 
 import org.faketri.net.exceptions.request.ErrorRequest;
-import org.faketri.net.io.dto.request.ProcessedRequest;
-import org.faketri.net.io.dto.request.Request;
+import org.faketri.net.io.dto.request.RequestContext;
 import org.faketri.net.io.dto.response.ResponseEntry;
 
 /**
- * Handles a specific type of {@link Request} and produces a corresponding {@link ResponseEntry}.
+ * Handles a specific type of {@link RequestContext} and produces a corresponding {@link ResponseEntry}.
  *
  * <p>Implementations are intended to be stateless with respect to a single invocation
  * and are suitable for use as lambda expressions or method references.
  *
  */
 @FunctionalInterface
-public interface CommandHandler {
+public interface CommandHandler<T> {
 
     /**
      * Handles the specified request and returns the resulting response.
@@ -22,5 +21,5 @@ public interface CommandHandler {
      * @return response produced for the given request
      * @throws ErrorRequest if the request cannot be processed
      */
-    ResponseEntry<?> handle(ProcessedRequest req) throws ErrorRequest;
+    ResponseEntry<?> handle(RequestContext<T> req) throws ErrorRequest;
 }

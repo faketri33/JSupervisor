@@ -13,7 +13,7 @@ public class Main {
 
     private static final Logger log = LoggerFactory.getLogger(Main.class);
 
-    static void main(String[] args) {
+    public static void main(String[] args) {
         if (args.length == 0) {
             log.error("No one argument present");
             return;

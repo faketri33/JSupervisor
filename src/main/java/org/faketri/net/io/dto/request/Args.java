@@ -57,6 +57,10 @@ public final class Args {
         }
     }
 
+    public List<String> positionals() {
+        return positional;
+    }
+
     public Set<String> flagNames() {
         return flags;
     }

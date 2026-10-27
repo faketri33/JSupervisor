@@ -107,7 +107,7 @@ public final class ApplicationRuntime {
         return process != null && process.isAlive();
     }
 
-    public Long pid() {
+    public long pid() {
         return process == null ? -1L : process.pid();
     }
 

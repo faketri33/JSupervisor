@@ -10,7 +10,7 @@ public record AppSnapshot(
         String name,
         State state,
         String profile,
-        Long pid,
+        long pid,
         boolean alive,
         Collection<String> journal
 ) {
